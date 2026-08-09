@@ -1,464 +1,467 @@
-# MiniMax H3 视频提示词生成 Skill
+# MiniMax H3 Video Prompt Generator
 
-把一句简单的故事情节 / 创意，转换为符合 **MiniMax H3（海螺 3）** 规范的视频生成提示词（**中英双语**）。
+> **简体中文版本**: [简体中文](README_cn.md)
 
-> 注：下方"文生图 / 图生图"是视频场景下的对应说法——本 Skill 生成的是**视频提示词**，即「文生视频」「单图生视频」。
+Turn a simple story / idea into **MiniMax H3 (Hailuo 3)**-compliant video-generation prompts (in **both Chinese and English**).
 
----
-
-> **你描述画面，它交付指令。**
->
-> 把一句模糊的创意，翻译成 MiniMax H3 能精准执行的**中英双语视频提示词**。最难的两件事它替你扛下：
->
-> - **让风格落地**——点名题材、年代、画风或导演，自动给出可执行的色温、光比、景别、节奏参数，不再凭感觉调参；
-> - **让叙事不穿帮**——内置"镜头连贯性 / 因果链"硬规则，杜绝相邻镜头主体凭空冒出、事件线无交代的跳镜翻车。
->
-> 覆盖 **6 种生成模式**、**4 层参考库 + 2 维正交风格体系**、**78 位导演风格锚点**，一次只改一个变量，跨 WorkBuddy / Claude Code / Codex 通用。
-
-## 它能做什么
-
-- 覆盖 **6 种生成模式**：文生视频、单图生视频、首尾帧、多图参考（全能参考）、视频编辑、数字人/虚拟人口播。
-- 运行时先确认模式，为每个参考素材分配角色，嵌入统一音频块与 `PRESERVE / AVOID` 约束。
-- 生成前用官方检查清单自检，产出「中英双语提示词 + 简短中文说明 + 一次只改一个变量迭代指引」。
-- 内置**四层影像参考库 + 两维正交叠加**，让提示词落到可执行参数（ASL 秒数 / 开尔文色温 / 光比 / 光位 / 禁用运镜），而非"电影感"空话。
+> Note: "Text-to-image / image-to-image" below are the corresponding terms in a video context — this Skill generates **video prompts**, i.e. "text-to-video" and "image-to-video".
 
 ---
 
-## 一、它遵循的核心规则
+> **You describe the scene, it delivers the instructions.**
+>
+> Translate a vague idea into **bilingual (Chinese + English) video prompts** that MiniMax H3 can execute precisely. It shoulders the two hardest parts for you:
+>
+> - **Make the style actionable** — name a genre, era, art style, or director, and it auto-generates executable parameters (color temperature, lighting ratio, shot size, pacing) instead of guessing by feel.
+> - **Keep the narrative from breaking** — built-in hard rules for "shot continuity / cause-and-effect chain" eliminate the classic failure of a new subject popping in from nowhere or an event line dropping without explanation.
+>
+> Covers **6 generation modes**, a **4-layer reference library + 2 orthogonal style dimensions**, **78 director style anchors**, change one variable at a time, works across WorkBuddy / Claude Code / Codex.
 
-### A. MiniMax H3 官方规范（硬约束，不可违反）
+## What It Can Do
 
-| # | 规则 | 说明 |
+- Covers **6 generation modes**: text-to-video, image-to-video, first-last frame, multi-image reference (all-round reference), video editing, digital human / virtual avatar speaking.
+- Confirms the mode at runtime, assigns a role to each reference asset, and embeds a unified audio block plus `PRESERVE / AVOID` constraints.
+- Self-checks against the official checklist before generation, delivering "bilingual prompt + brief Chinese note + one-variable-at-a-time iteration guide".
+- Built-in **4-layer video reference library + 2 orthogonal style dimensions**, turning prompts into executable parameters (ASL seconds / Kelvin color temperature / lighting ratio / light position / banned camera moves) instead of empty words like "cinematic".
+
+---
+
+## I. Core Rules It Follows
+
+### A. MiniMax H3 Official Spec (hard constraints, non-negotiable)
+
+| # | Rule | Explanation |
 |---|---|---|
-| 1 | **三段式分层** | 完整提示词 = `参考素材说明` + `核心创意` + `分段过程`。绝大多数失败来自不分层的整段文字。 |
-| 2 | **六要素嵌进核心创意句** | 主体 + 动作 + 环境 + 镜头 + 光线/风格 + 限制；**动作必须按时间顺序写**。 |
-| 3 | **参考素材只用带括号顺序 token、绝不写路径** | 素材由用户上传，平台按上传顺序自动映射为 `<Picture 1> / <Video 1> / <Audio 1>`；**素材说明与正文只引用该 token，不写本地/网络路径**；token 在中文版与英文版中保持不变（类型词始终是 `Picture/Video/Audio`，不翻译）。**每个 token 后必须接"`——作用说明`"**。 |
-| 4 | **中英双语输出** | 默认产出中文叙述 + 英文运镜术语（英文镜头词歧义更小）。 |
-| 5 | **一次只改一个变量迭代** | 出片跑偏时只改一处 → 重生成 → 对比，避免不知道哪个改动生效。 |
+| 1 | **Three-tier layered structure** | A complete prompt = `Reference Assets` + `Core Creative` + `Segmented Process`. Most failures come from dumping everything into one unlayered block. |
+| 2 | **Six elements embedded in the core-creative line** | Subject + Action + Environment + Camera + Light/Style + Constraint; **actions must be written in time order**. |
+| 3 | **Reference assets use only bracketed sequential tokens — never paths** | Assets are uploaded by the user; the platform auto-maps them to `<Picture 1> / <Video 1> / <Audio 1>` by upload order; **asset notes and body text only reference these tokens, never local/network paths**; tokens stay identical in the Chinese and English versions (the type word is always `Picture/Video/Audio`, never translated). **Each token must be followed by "`—— role description`"**. |
+| 4 | **Bilingual output** | Defaults to Chinese narrative + English camera-movement terms (English lens words are less ambiguous). |
+| 5 | **Change one variable at a time** | When output drifts, change only one thing → regenerate → compare, so you know which change took effect. |
 
-### B. 本 Skill 追加的硬规则（针对高频翻车点）
+### B. Hard Rules Added by This Skill (for common failure points)
 
-1. **镜头连贯性 / 因果链（多镜必做）**：逐对检查相邻镜头 `Shot N → N+1`——① 主体连续（下一镜主体须已出现/已建立，禁止凭空冒出物体）；② 动作因果（下一镜动作须承接上一镜结果，不能无故中断或换线）；③ 时空连续（空间/时间默认连贯，除非显式转场）。写之前先排一条**事件因果链**。
-2. **模式先确认，不能自动判断**：用户即使带了素材，也可能想纯文生。先问模式；选了需素材模式却没传文件，提示补素材或改走文生，不硬生成不可控结果。**音频不能作为唯一参考**。
-3. **题材 → 结构 → 风格，加载顺序固定不可跳级**：任何故事先过 `genre-index.md` 命中题材并只加载那一个题材文件；命中广告关键词才额外叠加广告结构；用户点名导演/影片时才读 L3 导演库。**不同时加载多个题材文件**（参数会打架）。
-4. **A/B/C 三方案默认点火**：未指定风格/导演时，先甩三条截然不同（节奏+光色+景别三者都不同）的路线，参数取自题材文件，不凭空编。
-5. **动作场景专项校验**：打斗/追逐/对决/竞技/战争命中 `action-wuxia.md`，必须读完再生成。硬约束：镜头数÷时长 ≤ 1.5 镜/秒；ASL 0.7–1.0s；景别相邻跳 ≥2 级；开场静、结尾静。
-6. **导演铁律冲突裁决**：导演签名手法若与题材铁律冲突，**一律以题材为准**，裁掉冲突项、只借不冲突维度，并附「冲突裁决说明」。禁忌组合（如库布里克+快切、韦斯·安德森+手持、美食+冷色）命中即提醒并给替代。
-7. **素材职责必须明示**：每个 `<Picture N>/<Video N>/<Audio N>` 都要声明它锁什么（角色参考 / 物体 / 场景 / 关键帧 / 运镜 / 音频复用 / 源视频…），未声明用途的素材会被无视。
-
----
-
-## 二、内置参考库与工作原理
-
-参考库采用 **四层（题材 × 结构 × 风格 × 介质）+ 两维正交（视觉风格 × 年代）** 架构。各层职责与协作方式如下：
-
-### L1 · 题材镜头语法（`references/genre/`）
-- **作用**：把"动作武侠 / 科幻 / 恐怖惊悚 / 犯罪 / 战争 / 科技企业 / 美食 / 动漫…"每个题材，转成**可执行参数**——ASL 秒数、开尔文色温、光比、fps、光位名、禁用运镜、母题动词、必备镜头、翻车点。
-- **怎么用**：规则 3 第一优先。先读 `genre-index.md` 用关键词命中题材 → **只加载那一个** `genre/<题材>.md` → 从中取参数填进提示词。跳过它必然写出"电影感"空话。
-- **组成**：`action-wuxia.md`（动作/武侠）、`scifi.md`、`horror-thriller.md`、`crime-thriller.md`、`war-military.md`、`tech-corporate.md`、`documentary.md`、`emotional-family.md`，以及长尾 5 个主题子集 `long-tail-people.md` / `long-tail-stage.md` / `long-tail-media.md` / `long-tail-commercial.md` / `long-tail-special.md`（共 52 个长尾子类：体育/演艺/喜剧/网络短视频/科普/数字人/爱情/新闻…）。
-
-### L2 · 商业广告 8 种叙事结构（`references/commercial-ad-structures.md`）
-- **作用**：仅在命中广告 / TVC / 品牌片 / 卖点 / 转化 / 信息流 / slogan / logo 关键词时，**额外**叠加。管"**顺序**"（问题—解决 / 一镜到底 / 对比 / 情感微电影 / 产品即主角 / 反转幽默 / KOL 口播 / 快闪节奏）。
-- **怎么用**：与 L1 题材**正交叠乘**——题材管风格，结构管顺序。三条硬约束必落提示词：① 第 1 镜是钩子不是 logo；② 产品英雄镜 + PRESERVE 锁外观；③ 末镜能停住。
-
-### L3 · 导演风格锚点（`director-anchors-western.md` / `director-anchors-asian.md` + `dp-cinematographer-anchors.md`）
-- **作用**：把"王家卫那种感觉""诺兰味"之类的**主观感觉**，拆成可执行参数（镜长+景别+运镜+色温+光位+质感）。
-- **怎么用**：**仅当用户点名导演/影片/"XX 那种感觉"**才读。只写导演名字无效——必须拆成参数写进正文，导演名放风格句末尾做锚点；最多借 2 位导演、每维度只服一位；含禁忌组合与冲突裁决（见规则 7）。`dp-cinematographer-anchors.md` 单独管光影/色调/器材维度。
-
-### L4 · 介质语法（`references/medium/`）
-- **作用**：手机自拍 / 监控 DV / 运动相机（GoPro/FPV）三类介质的质感与抖动语言（jello、ae-hunting、focus-hunting、手持呼吸感）。
-- **怎么用**：当用户要"手机拍的""监控视角""第一视角运动"时叠加，管**质感基底**，与题材语法相乘。
-
-### 两维正交 · 视觉风格 + 年代
-- **视觉风格**（`visual-style.md`）：16 种画风，**含动漫根拆分**——日式赛璐璐/吉卜力/新海诚 vs 美式 TV 卡通/迪士尼，避免"用动画讲解黑洞"误判。
-- **年代**（`era-period.md`）：12 个时代的色彩/颗粒/画幅/光质基底。
-- **怎么用**：与题材**叠乘**，给观感打底，不替代题材参数。
-
-### 入口与调度
-- `genre-index.md` 是四层架构的**单一入口**：含题材→文件索引、参数速查表、情绪→语法映射、A/B/C 工作流、插值指南（命中不了时用最近题材按"节奏/光色/景别/结构"四维度拼）。
-- **加载链固定**：题材 → 结构 → 风格，不可跳级；全程只取参数、不堆文件。
+1. **Shot continuity / cause-effect chain (mandatory for multi-shot)**: Check each adjacent pair `Shot N → N+1` — ① subject continuity (next shot's subject must already appear / be established; no new objects from nowhere); ② action causality (next shot's action must follow from the previous shot's result, no unexplained interruption or line switch); ③ spatiotemporal continuity (space/time default continuous unless an explicit transition). Draft an **event cause-effect chain** before writing.
+2. **Confirm mode first, never auto-decide**: Even with assets, the user may want pure text-to-video. Ask the mode first; if they pick an asset-required mode but upload nothing, prompt for assets or switch to text-to-video — never hard-generate an uncontrolled result. **Audio alone cannot be the only reference**.
+3. **Genre → Structure → Style, fixed load order, no skipping**: Every story first hits `genre-index.md` to match a genre and loads **only that one** genre file; only add ad-structure on ad keywords; only read the L3 director library when the user names a director/film. **Never load multiple genre files at once** (parameters clash).
+4. **A/B/C three-option default ignition**: When no style/director is specified, throw out three distinctly different routes (different in pacing + light/color + shot-size strategy), with parameters taken from the genre file, not invented.
+5. **Action-scene special validation**: Combat/chase/duel/sports/war hits `action-wuxia.md` and must be read fully before generation. Hard constraints: shots ÷ duration ≤ 1.5 shots/sec; ASL 0.7–1.0s; adjacent shot sizes jump ≥2 levels; calm opening, calm ending.
+6. **Director-iron-law conflict resolution**: If a director's signature clashes with a genre's iron law, **the genre always wins** — cut the conflicting item, keep only non-conflicting dimensions, and attach a "conflict-resolution note". Forbidden combos (e.g. Kubrick + fast-cut, Wes Anderson + handheld, food + cold color) trigger a warning and an alternative.
+7. **Asset responsibilities must be explicit**: Every `<Picture N>/<Video N>/<Audio N>` must declare what it locks (character ref / object / scene / keyframe / camera / audio reuse / source video…); undeclared assets are ignored.
 
 ---
 
-## 三、目录结构
+## II. Built-in Reference Library & How It Works
+
+The reference library uses a **four-layer (genre × structure × style × medium) + two orthogonal dimensions (visual style × era)** architecture. Each layer's role and collaboration:
+
+### L1 · Genre Camera Grammar (`references/genre/`)
+- **Role**: Turns each genre — "action-wuxia / sci-fi / horror-thriller / crime / war / tech-corporate / food / anime…" — into **executable parameters**: ASL seconds, Kelvin color temperature, lighting ratio, fps, light-position name, banned camera moves, motif verbs, essential shots, failure points.
+- **How to use**: Rule 3, top priority. First read `genre-index.md` to match a genre by keyword → **load only that one** `genre/<genre>.md` → pull parameters from it into the prompt. Skipping it inevitably yields "cinematic" empty talk.
+- **Composition**: `action-wuxia.md` (action/wuxia), `scifi.md`, `horror-thriller.md`, `crime-thriller.md`, `war-military.md`, `tech-corporate.md`, `documentary.md`, `emotional-family.md`, plus the 5 long-tail subsets `long-tail-people.md` / `long-tail-stage.md` / `long-tail-media.md` / `long-tail-commercial.md` / `long-tail-special.md` (52 long-tail sub-genres total: sports / performing arts / comedy / web short-video / science-pop / digital human / romance / news…).
+
+### L2 · Commercial Ad 8 Narrative Structures (`references/commercial-ad-structures.md`)
+- **Role**: Added **only** when ad / TVC / brand film / selling-point / conversion / feed / slogan / logo keywords hit, **in addition**. Governs "**order**" (problem–solution / one-take / contrast / emotional micro-film / product-as-hero / reversal-comedy / KOL talk / flash-cut rhythm).
+- **How to use**: Orthogonally multiplied with L1 genre — genre governs style, structure governs order. Three hard constraints must land in the prompt: ① shot 1 is a hook, not a logo; ② product hero shot + PRESERVE locks appearance; ③ last shot can hold.
+
+### L3 · Director Style Anchors (`director-anchors-western.md` / `director-anchors-asian.md` + `dp-cinematographer-anchors.md`)
+- **Role**: Turns subjective feelings like "Wong Kar-wai vibe" "Nolan flavor" into executable parameters (shot length + shot size + camera move + color temp + light position + texture).
+- **How to use**: Read **only when the user names a director / film / "XX vibe"**. Writing just the director's name is useless — must be broken into parameters in the body, with the name as an anchor at the end of the style line; borrow at most 2 directors, one per dimension; includes forbidden combos and conflict resolution (see rule 7). `dp-cinematographer-anchors.md` separately governs light/shadow, color, and gear dimensions.
+
+### L4 · Medium Grammar (`references/medium/`)
+- **Role**: The texture and shake language (jello, ae-hunting, focus-hunting, handheld breathing) of three media: phone selfie / surveillance DV / action camera (GoPro/FPV).
+- **How to use**: Add when the user wants "shot on phone" / "surveillance POV" / "first-person action", governing the **texture base**, multiplied with genre grammar.
+
+### Two Orthogonal Dimensions · Visual Style + Era
+- **Visual Style** (`visual-style.md`): 16 art styles, **with anime roots split** — Japanese cel / Ghibli / Shinkai vs American TV cartoon / Disney, avoiding misjudging "using animation to explain a black hole".
+- **Era** (`era-period.md`): 12 eras' color / grain / aspect / light-quality base.
+- **How to use**: Multiplied with genre, undercoating the look, not replacing genre parameters.
+
+### Entry & Dispatch
+- `genre-index.md` is the **single entry** of the four-layer architecture: genre→file index, parameter quick-reference, emotion→grammar mapping, A/B/C workflow, interpolation guide (when no match, borrow from the nearest genre on four dimensions: "rhythm / light-color / shot-size / structure").
+- **Fixed load chain**: genre → structure → style, no skipping; pull parameters throughout, don't pile files.
+
+---
+
+## III. Directory Structure
 
 ```
 minimax-h3-prompt/
-├── SKILL.md                            # 核心工作流与规则（必读）
-├── README.md
+├── SKILL.md                            # core workflow & rules (must-read)
+├── README.md                          # English version
+├── README_cn.md                       # Simplified-Chinese version
 └── references/
-    ├── genre-index.md                  # 四层架构入口 + 题材→文件索引 + 插值指南
-    ├── genre/                          # L1 题材镜头语法
-    │   ├── action-wuxia.md             #   动作/武侠（呼吸曲线、景别跳级、因果链校验）
+    ├── genre-index.md                  # four-layer entry + genre→file index + interpolation guide
+    ├── genre/                          # L1 genre camera grammar
+    │   ├── action-wuxia.md             #   action/wuxia (breathing curve, shot-size jumps, cause-effect validation)
     │   ├── scifi.md  horror-thriller.md  crime-thriller.md  war-military.md
     │   ├── tech-corporate.md  documentary.md  emotional-family.md
-    │   ├── long-tail-people.md         #   人物/情感/生活服务（婚礼·儿童宠物·旅行·青春·都市爱情·医疗·宗教）
-    │   ├── long-tail-stage.md          #   演艺/舞台/综艺（体育·舞蹈·演唱会·戏曲·舞台·歌舞·综艺·喜剧·脱口秀）
-    │   ├── long-tail-media.md          #   媒体/知识/数字人（教育·科普·新闻·虚拟人·数字人·口播·电竞·ASMR）
-    │   ├── long-tail-commercial.md     #   商业/活动/带货（金融·房地产·文旅·年会·招聘·开箱·直播电商）
-    │   ├── long-tail-special.md        #   特殊摄影/奇幻/类型片（游戏CG·动画·水下·航拍·微距·军事·古装·仙侠·灾难·西部·黑色电影）
-    │   └── long-tail-genres.md         #   长尾附录：跨题材示例 + 插值规则（非按题材加载）
-    ├── commercial-ad-structures.md     # L2 广告 8 结构范式
-    ├── director-anchors-western.md     # L3 欧美导演锚点 + 禁忌组合
-    ├── director-anchors-asian.md       # L3 华语/亚洲导演锚点
-    ├── dp-cinematographer-anchors.md   # L3 摄影指导锚点（光影/色调/器材）
-    ├── visual-style.md                 # 正交维度：16 画风（含日式/美式动漫根）
-    ├── era-period.md                   # 正交维度：12 时代
-    └── medium/                         # L4 介质语法（手机/监控/运动相机）
+    │   ├── long-tail-people.md         #   people/emotion/life-services (wedding·kids-pets·travel·youth·urban-romance·medical·religion)
+    │   ├── long-tail-stage.md          #   performing/stage/variety (sports·dance·concert·opera·stage·musical·variety·comedy·talk-show)
+    │   ├── long-tail-media.md          #   media/knowledge/digital-human (edu·science-pop·news·virtual-human·digital-human·talk·esports·ASMR)
+    │   ├── long-tail-commercial.md     #   commercial/event/livestream (finance·real-estate·travel·annual-meeting·recruit·unboxing·live-commerce)
+    │   ├── long-tail-special.md        #   special-photography/fantasy/genre (gameCG·anime·underwater·aerial·macro·military·costume·xianxia·disaster·western·noir)
+    │   └── long-tail-genres.md         #   long-tail appendix: cross-genre examples + interpolation rules (not loaded by genre)
+    ├── commercial-ad-structures.md     # L2 ad 8-structure paradigms
+    ├── director-anchors-western.md     # L3 western director anchors + forbidden combos
+    ├── director-anchors-asian.md       # L3 Chinese/Asian director anchors
+    ├── dp-cinematographer-anchors.md   # L3 DP anchors (light/shadow·color·gear)
+    ├── visual-style.md                 # orthogonal dim: 16 art styles (with JP/US anime roots)
+    ├── era-period.md                   # orthogonal dim: 12 eras
+    └── medium/                         # L4 medium grammar (phone/surveillance/action-cam)
 ```
 
 ---
 
-## 四、六种用法（核心使用方法）
+## IV. Six Usage Modes (core how-to)
 
-> 通用约定：素材按上传顺序编号为 `<Picture 1> / <Video 1> / <Audio 1>`，**只写 token、不写路径**；每个 token 后接"`——作用说明`"。
+> General convention: assets are numbered by upload order as `<Picture 1> / <Video 1> / <Audio 1>`, **tokens only, no paths**; each token is followed by "`—— role description`".
 
-### ① 文生视频（纯文字创意，无素材）— 对应"文生图"
-不需要任何参考素材，适合"我有个想法，帮我写成片子"。
-
-```
-用户：/minimax-h3 雨夜女孩在霓虹巷里奔跑，躲开身后追来的黑影
-── 输出骨架 ──
-[时长/画幅] 10s / 16:9
-[核心创意] 一个穿红裙的短发女孩在雨夜的霓虹后巷中狂奔，湿漉漉的地面倒映着两侧招牌的彩色光斑，
-           她身后隐约追来一道压低身形的黑影。镜头以低机位贴地跟拍，捕捉她踩起的水花与裙摆翻飞，
-           在黑影即将逼近的瞬间做一次急推，把紧张感压到观众脸上。整体冷蓝环境光铺底，
-           让红裙与霓虹高光成为画面里唯一的暖色焦点，强化「被追逐的孤独感」。
-[分段过程] 0–4s 奔跑建立；4–7s 黑影入画加速；7–10s 急转消失于岔口。
-[声音设计] overall_soundscape=雨声+脚步+远处警笛；non_diegetic_music=N/A
-PRESERVE=[红裙/短发/冷蓝调]  AVOID=[面部变形/跳变/暖色]
-```
-
-### ② 单图生视频（1 张图，图作首帧）— 对应"图生图"
-让一张图里的人物/产品动起来，图是视频第一帧。
+### ① Text-to-Video (pure text idea, no assets) — corresponds to "text-to-image"
+No reference assets needed; good for "I have an idea, write it into a film".
 
 ```
-用户：（粘贴人物图）/minimax-h3 让她转头微笑，背景霓虹轻轻闪动
-── 输出骨架 ──
-[参考素材说明]
-<Picture 1>：角色参考——锁定人脸/发型/红裙/姿态，完整保留
-[时长/画幅] 10s / 9:16
-[核心创意] 以 <Picture 1> 锁定的人物作为首帧，女孩先以极小的幅度缓缓转头，发丝与肩线随动作轻摆，
-           眼神从画面外收回、落到镜头上；随后嘴角由抿到扬，绽开一抹自然不刻意的微笑，
-           面部肌肉与微表情逐帧连贯。背景的霓虹招牌做低频微闪，像呼吸般起伏，
-           既保留原图的氛围又让画面「活」起来，全程不破坏首帧已确定的服装与构图。
-[分段过程] 0–5s 转头；5–10s 微笑定格。
-PRESERVE=[<Picture 1> 的面部/服装/颜色/构图]  AVOID=[面部变形/闪烁]
+User: /minimax-h3 a girl runs through a neon alley on a rainy night, dodging a shadow chasing from behind
+── Output skeleton ──
+[Duration/Aspect] 10s / 16:9
+[Core Creative] A short-haired girl in a red dress sprints through a neon back-alley on a rainy night; the wet ground mirrors the colored glints of signs on both sides,
+           and a hunched shadow looms after her from behind. The camera tracks low to the ground, catching the splash she kicks and the flick of her skirt,
+           then snaps a hard push-in the instant the shadow closes in, pressing the tension into the viewer's face. Overall cool-blue ambient light,
+           with the red dress and neon highlights as the only warm focal points, amplifying "the loneliness of being chased".
+[Segmented Process] 0–4s running established; 4–7s shadow enters frame and accelerates; 7–10s sharp turn and vanish into a side alley.
+[Sound Design] overall_soundscape=rain + footsteps + distant siren; non_diegetic_music=N/A
+PRESERVE=[red dress / short hair / cool-blue tone]  AVOID=[face distortion / jump-cut / warm color]
 ```
 
-### ③ 首尾帧（1–2 张图，锁住开头与结尾画面）
-产品展示、状态变化、场景转换最稳的玩法。图 1=首帧，图 2=尾帧，中间一条连续镜头完成过渡。
+### ② Image-to-Video (1 image, used as first frame) — corresponds to "image-to-image"
+Bring a person/product in one image to life; the image is the video's first frame.
 
 ```
-用户：（图1 空瓶）（图2 满瓶）/minimax-h3 空瓶到满瓶的注入过程
-── 输出骨架 ──
-[参考素材说明]
-<Picture 1>：首帧——空玻璃瓶，左侧打光
-<Picture 2>：尾帧——满瓶，液面到位、光斑在瓶身
-[时长/画幅] 8s / 16:9
-[核心创意] 用一条不间断的单镜头，从 <Picture 1> 的空瓶状态开始：液体自瓶口注入，柱流稳定、落点居中，
-           液面随注入匀速上升，气泡与挂壁细节真实；瓶身缓慢微旋，让 <Picture 1> 左侧打光
-           逐步过渡到 <Picture 2> 的光斑位置。镜头在液面上升过程中做极缓的推入，
-           结尾精准定格在 <Picture 2> 的满瓶状态——液面、光斑、标签角度与尾帧逐像素对齐。
-PRESERVE=[瓶身造型/标签/两帧间稳定元素]  AVOID=[跳变/液面错位]
+User: (paste character image) /minimax-h3 have her turn her head and smile, with the neon flickering gently in the background
+── Output skeleton ──
+[Reference Assets]
+<Picture 1>: character reference — lock face / hairstyle / red dress / pose, preserve fully
+[Duration/Aspect] 10s / 9:16
+[Core Creative] Using the character locked by <Picture 1> as the first frame, the girl first turns her head with the smallest amplitude, her hair and shoulder line swaying with the motion,
+           her gaze withdrawing from off-frame and landing on the lens; then her mouth curves from pressed to raised, blooming into a natural, unforced smile,
+           facial muscles and micro-expressions coherent frame by frame. The background neon sign flickers at low frequency, rising and falling like breath,
+           preserving the original image's mood while bringing the frame "alive", never breaking the costume or composition fixed by the first frame.
+[Segmented Process] 0–5s turn head; 5–10s smile holds.
+PRESERVE=[face / costume / color / composition of <Picture 1>]  AVOID=[face distortion / flicker]
 ```
 
-### ④ 多图参考 / 全能参考（图 + 视频 + 音频混合）
-手上有明确资产要全部保留（脸、运镜、嗓音、风格图）时用，每个素材都点名职责。
+### ③ First-Last Frame (1–2 images, lock opening & ending frames)
+The most stable play for product showcase, state change, scene transition. Image 1 = first frame, Image 2 = last frame, one continuous shot bridges them.
 
 ```
-用户：（人物图）（产品图）（运镜参考视频）（环境音轨）
-      /minimax-h3 用这个模特在门店里展示这款耳机，运镜跟参考视频，声音用我给的音轨
-── 输出骨架 ──
-[参考素材说明]
-<Picture 1>：角色参考——锁定人脸/发型/身材
-<Picture 2>：物体参考——锁住耳机颜色/扣件/材质
-<Video 1>：运镜参考——跟它的推镜节奏
-<Audio 1>：音频复用——把这条音轨直接用作声音
-[时长/画幅] 15s / 16:9
-[核心创意] 模特在门店场景中自然试用这款耳机：先抬手佩戴、再转身展示、最后对镜头做产品卖点手势，
-           整套动作与 <Video 1> 的运镜参考保持一致的推镜节奏——开篇中景建立、中段特写耳机细节、
-           收尾回到中景。环境是真实的品牌门店调性，产品颜色/扣件/材质严格锁定 <Picture 2>。
-           声音直接复用 <Audio 1> 的音轨，口播与背景乐的节奏与画面剪辑点对齐，做到「画面与声音同源」。
-[分段过程] 0–4s 佩戴展示；4–10s 转身特写耳机细节；10–15s 对镜头卖点手势（声音引用 <Audio 1> 节奏）
-PRESERVE=[每条点名要保留的特征]  AVOID=[…]
+User: (Image 1 empty bottle) (Image 2 full bottle) /minimax-h3 the pouring process from empty to full bottle
+── Output skeleton ──
+[Reference Assets]
+<Picture 1>: first frame — empty glass bottle, lit from the left
+<Picture 2>: last frame — full bottle, liquid level reached, light spot on the body
+[Duration/Aspect] 8s / 16:9
+[Core Creative] One uninterrupted shot begins from <Picture 1>'s empty-bottle state: liquid pours from the mouth, column steady and centered,
+           the level rises evenly with the pour, bubbles and wall-adhesion detail real; the bottle slowly rotates, letting <Picture 1>'s left-side light
+           gradually transition to <Picture 2>'s light-spot position. The camera eases a very slow push-in as the level rises,
+           ending precisely locked on <Picture 2>'s full-bottle state — level, light spot, label angle pixel-aligned with the last frame.
+PRESERVE=[bottle shape / label / stable elements between the two frames]  AVOID=[jump-cut / level misalignment]
 ```
 
-### ⑤ 视频编辑（1 段源视频 + 可选新图，做局部替换）
-对已有视频换物体/换背景/换对白，保持原运镜、光线、背景不变。
+### ④ Multi-Image Reference / All-Round Reference (image + video + audio mixed)
+Use when you have explicit assets to preserve entirely (face, camera, voice, style image); each asset's role is named.
 
 ```
-用户：（源视频：猫在沙发上）/minimax-h3 把猫换成金毛犬，其他不变
-── 输出骨架 ──
-[参考素材说明]
-<Video 1>：源视频——保留其人物外观/表演/运镜/时序，仅改目标
-[时长/画幅] 6s / 16:9
-[核心创意] 保留 <Video 1> 原有的全部表演、运镜与时序，仅把沙发上的猫替换为一只金毛犬：
-           犬的毛色、体态与动作幅度贴合原猫的节奏，慵懒趴卧、偶尔抬头。替换后做局部重打光，
-           让新主体的主光方向、亮度与阴影落点与原背景的光照完全一致，避免出现「浮在画面上的贴图感」；
-           沙发、靠垫、背景虚化与整体色调原样不动，确保观感无缝、不穿帮。
-PRESERVE=[源视频需原样保留的部分：运镜/光线/背景]  AVOID=[穿帮/光线错位]
+User: (character image) (product image) (camera-reference video) (ambient audio track)
+      /minimax-h3 use this model to showcase this headphone in-store, match the reference video's camera, use my audio track for sound
+── Output skeleton ──
+[Reference Assets]
+<Picture 1>: character reference — lock face / hairstyle / body shape
+<Picture 2>: object reference — lock headphone color / buckle / material
+<Video 1>: camera reference — match its push-in rhythm
+<Audio 1>: audio reuse — use this track directly as the sound
+[Duration/Aspect] 15s / 16:9
+[Core Creative] The model naturally tries the headphone in a store setting: first raises hand to wear it, then turns to show, finally makes a selling-point gesture at the lens,
+           the whole action keeps a consistent push-in rhythm with <Video 1>'s camera reference — medium shot to establish, mid close-up on headphone detail,
+           back to medium at the end. The environment is a real brand-store tone; product color / buckle / material strictly locked to <Picture 2>.
+           Sound directly reuses <Audio 1>'s track; voiceover and BGM rhythm align with the picture's cut points, achieving "picture and sound from one source".
+[Segmented Process] 0–4s wear & show; 4–10s turn & close-up on headphone detail; 10–15s selling-point gesture at lens (sound references <Audio 1> rhythm)
+PRESERVE=[each named feature to preserve]  AVOID=[…]
 ```
 
-### ⑥ 数字人 / 虚拟人口播（角色图 + 可选声音 / 背景）
-适合虚拟人播报、带货、知识讲解、新闻主播。数字人最怕"恐怖谷"——核心是**形象稳定 + 随机眨眼 + 口型对齐 <80ms**，所以强制锁身份、脚本原文写入、避免硬侧光（会照出建模转折面）。开拍前先让你二选一：**写实路线**（必须做到微表情）或**风格化虚拟形象**（二次元/3D 卡通，根本不进恐怖谷）。
+### ⑤ Video Editing (1 source video + optional new image, partial replacement)
+Replace object / background / dialogue in an existing video while keeping original camera, light, background unchanged.
 
 ```
-用户：（数字人形象图）（可选：配音音轨 / 背景图或视频）
-      /minimax-h3 用这个数字人播报一条 30 秒科技资讯，声音用我给的音轨
-── 输出骨架 ──
-[参考素材说明]
-<Picture 1>：数字人角色参考——锁定人脸/发型/服装/虚拟形象造型，全程不变
-<Audio 1>：声音参考——口播音色/语速匹配这条音轨（或直接用作配音）
-[时长/画幅] 30s / 9:16
-[核心创意] 数字人保持正面固定的 MCU（胸线至头顶），全程面向镜头口播脚本原文：
-           先用一次轻微的低头/抬眼完成「入场」，随后以不规律的节奏随机眨眼（每 3–5 秒一次、间隔故意不固定），
-           配合轻点头与小幅手势让播报有呼吸感，避免机械式同步。镜头只在 30 秒内做一次 ≤15% 的极缓推入，
-           绝不摇移。布光用 5600K 正面柔光蝶光，两侧各 −1.5 档补光、光比压到 1.3:1，
-           硬侧光一律禁止（会照出虚拟形象的建模转折面、瞬间掉进恐怖谷）。脚本原文逐字写入 PRESERVE，
-           口型对齐必须 <80ms，身份与服装全程锁定不漂移。
-PRESERVE=[形象/服装稳定，口型对齐 <80ms，随机眨眼]  AVOID=[形象漂移/口型错位/机械眨眼/硬侧光]
+User: (source video: cat on sofa) /minimax-h3 replace the cat with a golden retriever, everything else unchanged
+── Output skeleton ──
+[Reference Assets]
+<Video 1>: source video — preserve its character appearance / performance / camera / timing, change only the target
+[Duration/Aspect] 6s / 16:9
+[Core Creative] Keep all of <Video 1>'s performance, camera, and timing; only replace the cat on the sofa with a golden retriever:
+           the dog's coat, body, and motion amplitude follow the original cat's rhythm — lazily lying down, occasionally looking up. After replacement, do local relighting,
+           making the new subject's key-light direction, brightness, and shadow landing exactly match the original background's lighting, avoiding a "stuck-on decal" feel;
+           sofa, cushions, background blur, and overall tone stay untouched, ensuring a seamless, non-breaking look.
+PRESERVE=[parts of source video to keep as-is: camera / light / background]  AVOID=[breaking / light misalignment]
+```
+
+### ⑥ Digital Human / Virtual Avatar Speaking (character image + optional voice / background)
+For virtual-host broadcasting, livestream selling, knowledge explainer, news anchor. The digital human's biggest fear is the "uncanny valley" — the core is **stable identity + random blink + lip-sync <80ms**, hence forced identity lock, verbatim script writing, and avoiding hard side-light (which reveals the modeling's crease surfaces). Before shooting, let the user choose one of two: **realistic route** (must achieve micro-expressions) or **stylized virtual character** (anime / 3D cartoon, never enters the uncanny valley).
+
+```
+User: (digital-human image) (optional: voice track / background image or video)
+      /minimax-h3 use this digital human to broadcast a 30-second tech news, voice using my audio track
+── Output skeleton ──
+[Reference Assets]
+<Picture 1>: digital-human character reference — lock face / hairstyle / costume / virtual-character design, unchanged throughout
+<Audio 1>: voice reference — match this track's broadcast timbre / pace (or use directly as dubbing)
+[Duration/Aspect] 30s / 9:16
+[Core Creative] The digital human holds a fixed frontal MCU (chest line to top of head), facing the lens and broadcasting the verbatim script throughout:
+           first a slight head-drop / eye-lift to "enter"; then blinks randomly at irregular rhythm (once every 3–5s, interval deliberately unfixed),
+           with slight nods and small gestures giving the broadcast a breathing feel, avoiding mechanical sync. The camera does only one ≤15% ultra-slow push-in within 30s,
+           never pans. Lighting uses 5600K frontal soft butterfly light, both sides −1.5 stops fill, lighting ratio pressed to 1.3:1,
+           hard side-light absolutely forbidden (would reveal the virtual character's modeling crease surfaces, instantly dropping into the uncanny valley). Write the verbatim script into PRESERVE,
+           lip-sync must be <80ms, identity and costume locked throughout without drift.
+PRESERVE=[identity / costume stable, lip-sync <80ms, random blink]  AVOID=[identity drift / lip mismatch / mechanical blink / hard side-light]
 ```
 
 ---
 
-## 五、支持的主流工具
+## V. Supported Mainstream Tools
 
-本 Skill 采用通用的 **`SKILL.md` 格式**（YAML frontmatter + Markdown 指令），可在以下三款主流工具中直接安装、共用同一份文件，无需改写。
+This Skill uses the generic **`SKILL.md` format** (YAML frontmatter + Markdown instructions), installable directly in the following three mainstream tools, sharing the same file without rewrite.
 
-> **Windows 用户注意**：下文中的 `~` 即 `C:\Users\你的用户名\`。
+> **Windows users note**: `~` below means `C:\Users\your-username\`.
 
-### 1. WorkBuddy（原生支持）
+### 1. WorkBuddy (native support)
 
-- 用户级目录：`~/.workbuddy/skills/minimax-h3-prompt/`
-- 项目级目录：`<你的项目>/.workbuddy/skills/minimax-h3-prompt/`
+- User-level dir: `~/.workbuddy/skills/minimax-h3-prompt/`
+- Project-level dir: `<your-project>/.workbuddy/skills/minimax-h3-prompt/`
 
 ```bash
 git clone https://github.com/xujh1969/minimax-h3-prompt.git ~/.workbuddy/skills/minimax-h3-prompt
 ```
 
-- **调用**：对话中输入 `/minimax-h3`，或直接说"帮我生成 MiniMax H3 视频提示词""把这个故事写成海螺 H3 提示词"。
-- 内联图片（人物 / 场景）会被主动读取并写进提示词主体，是本工具相比纯文本接口的最大优势。
+- **Invoke**: type `/minimax-h3` in chat, or just say "help me generate a MiniMax H3 video prompt" / "write this story into a Hailuo H3 prompt".
+- Inline images (character / scene) are actively read and written into the prompt body — the biggest advantage of this tool over a plain-text interface.
 
 ### 2. Claude Code
 
-- 用户级目录：`~/.claude/skills/minimax-h3-prompt/`
-- 项目级目录：`<项目>/.claude/skills/minimax-h3-prompt/`（随仓库提交，团队共享）
+- User-level dir: `~/.claude/skills/minimax-h3-prompt/`
+- Project-level dir: `<project>/.claude/skills/minimax-h3-prompt/` (committed with repo, shared by team)
 
 ```bash
 git clone https://github.com/xujh1969/minimax-h3-prompt.git ~/.claude/skills/minimax-h3-prompt
 ```
 
-- **注意**：克隆后目录第一层必须**直接是 `SKILL.md`**（不要把 `minimax-h3-prompt` 仓库根再套一层，例如 `~/.claude/skills/minimax-h3-prompt-master/...` 会被识别不到，要先扁平化）。
-- Claude Code 会自动发现技能，**无需重启**；可用 `claude doctor` 在 "Loaded Skills" 中验证是否加载成功。
-- **调用**：直接描述任务（如"把'雨夜女孩奔跑'写成 MiniMax H3 视频提示词"），Claude Code 按 `description` 自动匹配加载。
+- **Note**: after cloning, the first level of the directory must **directly be `SKILL.md`** (don't nest the `minimax-h3-prompt` repo root again, e.g. `~/.claude/skills/minimax-h3-prompt-master/...` won't be detected — flatten it first).
+- Claude Code auto-discovers the skill, **no restart needed**; use `claude doctor` to verify under "Loaded Skills".
+- **Invoke**: describe the task directly (e.g. "write 'girl running on rainy night' into a MiniMax H3 video prompt"), Claude Code matches and loads by `description` automatically.
 
-### 3. Codex（OpenAI Codex CLI / Codex App）
+### 3. Codex (OpenAI Codex CLI / Codex App)
 
-- 用户级目录：`~/.codex/skills/minimax-h3-prompt/`（**部分版本**为 `~/.agents/skills/minimax-h3-prompt/`）
-- 项目级目录：`.codex/skills/minimax-h3-prompt/`（或 `.agents/skills/`）
+- User-level dir: `~/.codex/skills/minimax-h3-prompt/` (**some versions** `~/.agents/skills/minimax-h3-prompt/`)
+- Project-level dir: `.codex/skills/minimax-h3-prompt/` (or `.agents/skills/`)
 
 ```bash
-# 方式 A：手动克隆（最通用，跨版本稳定）
+# Method A: manual clone (most universal, version-stable)
 git clone https://github.com/xujh1969/minimax-h3-prompt.git ~/.codex/skills/minimax-h3-prompt
 ```
 
-也可用官方安装器（任选其一）：
+You can also use the official installer (pick one):
 
 ```bash
-# 会话内内置安装器（交互式选择）
+# in-session built-in installer (interactive)
 $skill-installer
 
-# 或用 npx 从 GitHub 一键安装到全局（指定目标为 codex）
+# or npx one-click install to global (target codex)
 npx skills add xujh1969/minimax-h3-prompt -a codex -g -y
 ```
 
-- **注意**：
-  - 安装后**重启 Codex** 使元数据（触发关键词 / 前置条件）生效。
-  - 不同 Codex 版本技能目录不同：若你的版本使用 `~/.agents/skills`，可建立软链接统一管理：
+- **Note**:
+  - After install, **restart Codex** to activate metadata (trigger keywords / preconditions).
+  - Different Codex versions use different skill dirs: if your version uses `~/.agents/skills`, you can symlink for unified management:
     ```bash
     ln -s ~/.codex/skills ~/.agents/skills
     ```
-  - Codex **默认不读取** `.claude/skills`，跨工具共享建议用上面的软链接或都装到 `~/.codex/skills`。
-- **调用**：任务描述匹配时自动激活，或会话内 `$minimax-h3-prompt` 显式调用。
+  - Codex **does not read** `.claude/skills` by default; for cross-tool sharing use the symlink above or install both to `~/.codex/skills`.
+- **Invoke**: auto-activates on task match, or call `$minimax-h3-prompt` explicitly in session.
 
 ---
 
-## 六、跨工具说明
+## VI. Cross-Tool Notes
 
-- `/minimax-h3` 斜杠指令是 **WorkBuddy 原生**触发方式；在 Claude Code / Codex 中，Skill 通过 `description` 与任务匹配自动加载，也可用各自显式调用语法引用。
-- 三款工具**共用同一份 `SKILL.md` 与 `references/` 参考库**，安装到对应目录即可，无需任何改动。
-- 若要在多工具间共享同一份技能文件，推荐在 `~` 下只保留一份真实目录，其余用软链接指向它。
+- `/minimax-h3` slash command is the **WorkBuddy-native** trigger; in Claude Code / Codex, the Skill auto-loads by matching `description` with the task, and can also be referenced via each tool's explicit-call syntax.
+- All three tools **share the same `SKILL.md` and `references/` library** — just install to the corresponding dir, no changes needed.
+- To share one skill file across tools, keep only one real dir under `~` and symlink the rest to it.
 
 ---
 
-## 七、可参考的素材库清单（视频类型 · 年代 · 色彩画风 · 导演风格）
+## VII. Reference Asset Library (video type · era · color/art-style · director style)
 
-本 Skill 不靠"电影感"空话，而是把下面这些**可点名参考**的维度，转成可执行参数（ASL 秒数 / 开尔文色温 / 光比 / 景别 / 禁用运镜）。写提示词时按 `题材 → 结构 → 风格` 顺序引用，介质 / 画风 / 年代在确定题材后叠加。
+This Skill doesn't rely on empty "cinematic" talk; instead it turns the **nameable reference** dimensions below into executable parameters (ASL seconds / Kelvin color temp / lighting ratio / shot size / banned camera moves). Reference in order `genre → structure → style`; medium / art-style / era are layered after the genre is set.
 
-### 7.1 可参考的视频类型（题材 → `genre/`）
+### 7.1 Referenceable Video Types (genre → `genre/`)
 
-**13 个专类**（独立成篇，命中即只加载那一个）：
+**13 core genres** (standalone files, load only the matched one):
 
-| 题材 | 触发关键词 |
+| Genre | Trigger keywords |
 |---|---|
-| 动作武侠 | 打斗 / 对决 / 追逐 / 格斗 / 武侠 / 动作片 / 快切 |
-| 美食 | 美食 / 餐饮 / 菜品 / 咖啡 / 火锅 / 探店 / 吃播 |
-| 产品 | 产品 / 静物 / 3C / 手机 / 电商 / 开箱 |
-| 时尚美妆 | 时尚 / 走秀 / 美妆 / 口红 / 香水 / 模特 |
-| 汽车 | 汽车 / 跑车 / 机车 / 越野 / 试驾 / 引擎 |
-| 温情家庭 | 温情 / 家庭 / 亲情 / 母婴 / 团圆 / 告别 / 回忆 |
-| 科幻 | 科幻 / 未来 / 赛博 / 太空 / 机器人 / AI / 飞船 |
-| 恐怖悬疑 | 恐怖 / 惊悚 / 悬疑 / 鬼 / 诡异 / 密室 / 心理 |
-| 空镜风光 | 空镜 / 风光 / 自然 / 日出 / 星空 / 城市天际线 |
-| 纪实访谈 | 纪实 / 访谈 / 匠人 / 人物故事 / 真实记录 |
-| 科技企业 | 科技 / 企业 / 发布会 / keynote / 品牌宣传片 / 芯片 |
-| 战争军事 | 战争 / 军事 / 战场 / 士兵 / 战壕 / 战术 |
-| 犯罪惊悚 | 犯罪 / 警匪 / 推理 / 命案 / 侦探 / 审讯 / 黑帮 |
+| Action Wuxia | fight / duel / chase / martial-arts / wuxia / action film / fast-cut |
+| Food | food / dining / dish / coffee / hotpot /探店 / mukbang |
+| Product | product / still-life / 3C / phone / e-commerce / unboxing |
+| Fashion Beauty | fashion / runway / beauty / lipstick / perfume / model |
+| Automotive | car / sports-car / motorcycle / off-road / test-drive / engine |
+| Warm Family | warmth / family / kinship / baby / reunion / farewell / memory |
+| Sci-Fi | sci-fi / future / cyber / space / robot / AI / spaceship |
+| Horror Suspense | horror / thriller / suspense / ghost / eerie / locked-room / psychological |
+| Empty Landscape | empty-shot / scenery / nature / sunrise / starry-sky / city-skyline |
+| Documentary | documentary / interview / craftsman / character-story / real-record |
+| Tech Corporate | tech / enterprise / keynote / brand-film / chip |
+| War Military | war / military / battlefield / soldier / trench / tactics |
+| Crime Thriller | crime / gangster /推理 / murder / detective / interrogation / mob |
 
-**52 个长尾子类**（已拆为 5 个主题子集 `long-tail-people.md` / `long-tail-stage.md` / `long-tail-media.md` / `long-tail-commercial.md` / `long-tail-special.md`，关键词举要）：体育竞技 · 演艺/舞台 · 喜剧/情景喜剧 · 都市爱情/偶像剧 · 悬疑刑侦 · 教育/知识(科普) · **虚拟人/数字人口播** · 网络短视频/带货 · 新闻类 · 动画/二次元 · 游戏CG/电竞 · 水下/航拍/微距/工业 · 公路/雨夜/复古 · 古装历史/仙侠/青春/灾难/西部/黑色电影 · 文旅/年会/招聘/ASMR · 宗教婚礼/儿童宠物/旅行。
+**52 long-tail sub-genres** (split into 5 theme subsets `long-tail-people.md` / `long-tail-stage.md` / `long-tail-media.md` / `long-tail-commercial.md` / `long-tail-special.md`, keywords abridged): sports-competition · performing-arts/stage · comedy/sitcom · urban-romance/idol-drama · suspense-crime · education/knowledge (science-pop) · **virtual-human/digital-human talk** · web-short-video/livestream · news · animation/2D · gameCG/esports · underwater/aerial/macro/industrial · road/rainy-night/retro · costume-history/xianxia/youth/disaster/western/noir · travel/annual-meeting/recruit/ASMR · religious-wedding/kids-pets/travel.
 
-> 命中不了用「插值」：把题材拆成 *节奏 / 光色 / 景别 / 结构* 四维度，各自从最近题材借（见 `genre-index.md` 第六节）。
+> When no match, use "interpolation": split the genre into *rhythm / light-color / shot-size / structure* four dimensions, borrowing each from the nearest genre (see `genre-index.md` section 6).
 
-### 7.2 可参考的年代（12 个 → `era-period.md`）
+### 7.2 Referenceable Eras (12 → `era-period.md`)
 
-1. 中国古代（先秦汉唐 / 宋 / 明清）
-2. 中国民国 1912–1949
-3. 欧洲中世纪 / 文艺复兴
-4. 维多利亚 / 蒸汽时代 1837–1901
-5. 1950–60 年代
-6. 1970 年代
-7. 1980 年代（霓虹）
-8. 1990 年代（录像带）
-9. 千禧年 Y2K 1999–2005
-10. 2010 年代
-11. 当下 2020s
-12. 近未来 2030–2050 与远未来（赛博 2099 / 废土 / 太空殖民）
+1. Ancient China (pre-Qin/Han-Tang / Song / Ming-Qing)
+2. Republican China 1912–1949
+3. Medieval Europe / Renaissance
+4. Victorian / Steam Age 1837–1901
+5. 1950–60s
+6. 1970s
+7. 1980s (neon)
+8. 1990s (VHS)
+9. Millennium Y2K 1999–2005
+10. 2010s
+11. Present 2020s
+12. Near-future 2030–2050 & far-future (cyber 2099 / wasteland / space-colony)
 
-每个时代给**色板 / 颗粒 / 画幅偏移**，作正交叠加层，不替代题材参数。
+Each era gives **color palette / grain / aspect offset** as an orthogonal overlay, not replacing genre parameters.
 
-### 7.3 可参考的色彩 / 画风（16 种视觉风格 → `visual-style.md`）
+### 7.3 Referenceable Color / Art Style (16 visual styles → `visual-style.md`)
 
-画风与题材**正交**——故事一字不改，换成不同画风就是完全不同的片。一条片只锁一种画风，写在提示词开头：
+Art style is **orthogonal** to genre — same story, different style = entirely different film. Lock only one style per film, written at the prompt's opening:
 
-| # | 画风 | 来源 | 典型色彩 / 质感 |
+| # | Art style | Origin | Typical color / texture |
 |---|---|---|---|
-| 1 | 真人实拍 Live-Action | 基准 | 35mm / 具体焦段 / 光比色温 |
-| 2 | 日式赛璐璐 TV 动画 | 日系 | 高饱和有限调色板、阴影偏紫 |
-| 3 | 吉卜力手绘水彩 | 日系 | 手绘水彩色、柔和自然光 |
-| 4 | 新海诚超写实光晕 | 日系 | 极致天空、光晕耀斑、雨与玻璃 |
-| 5 | 京都动画日常 | 日系 | 细腻日常光影、逆光通透 |
-| 6 | 押井守赛博动画 | 日系 | 低饱和青灰、静止长镜、水面倒影 |
-| 7 | 皮克斯 / 迪士尼 3D | 美系 | 写实 CG、体积光、材质真实 |
-| 8 | 梦工厂 3D | 美系 | 夸张弹性、糖果高调 |
-| 9 | Spider-Verse 混合风 | 美系 | 漫画分格 + 网点 + 故障艺术 |
-| 10 | 美式 TV 卡通 | 美系 | 粗黑轮廓、平涂色块、糖果色 |
-| 11 | 迪士尼二维手绘黄金期 | 美系 | 古典手绘、赛璐璐 |
-| 12 | 定格 / 黏土 | 通用 | 材质颗粒、停格顿挫 |
-| 13 | 中国水墨 | 中式 | 留白、墨韵、单色晕染 |
-| 14 | 剪纸 / 皮影 | 中式 | 剪影、镂空、侧光投影 |
-| 15 | 像素艺术 / Low-poly | 通用 | 16–32 色有限调色板、抖动、硬边 |
-| 16 | CGI 写实渲染 + 转描/油画 | 通用 | 产品级写实 或 油画笔触转描 |
+| 1 | Live-Action | baseline | 35mm / specific focal / ratio-temp |
+| 2 | Japanese Cel TV Anime | JP | high-sat limited palette, purple-shadow |
+| 3 | Ghibli Hand-painted Watercolor | JP | hand-painted watercolor, soft natural light |
+| 4 | Makoto Shinkai Hyper-real Glow | JP | extreme sky, flare/bloom, rain & glass |
+| 5 | Kyoto Animation Slice-of-life | JP | delicate daily light, translucent backlight |
+| 6 | Mamoru Oshii Cyber Anime | JP | low-sat teal-gray, locked long-take, water reflection |
+| 7 | Pixar / Disney 3D | US | realistic CG, volumetrics, real material |
+| 8 | DreamWorks 3D | US | exaggerated elasticity, candy high-key |
+| 9 | Spider-Verse Hybrid | US | comic panels + halftone + glitch art |
+| 10 | American TV Cartoon | US | thick black outline, flat fill, candy color |
+| 11 | Disney 2D Golden-Age Hand-drawn | US | classical hand-drawn, cel |
+| 12 | Stop-motion / Clay | general | material grain, stop-frame stutter |
+| 13 | Chinese Ink Wash | CN | negative space, ink rhythm, mono bleed |
+| 14 | Paper-cut / Shadow Play | CN | silhouette, hollow, side-light projection |
+| 15 | Pixel Art / Low-poly | general | 16–32 color limited palette, dither, hard edge |
+| 16 | CGI Realistic Render + Rotoscope / Oil | general | product-grade realistic or oil-brush rotoscope |
 
-### 7.4 可参考的著名导演风格
+### 7.4 Referenceable Famous Director Styles
 
-仅当用户点名导演 / 片名 / "XX 那种感觉" 才读，且**只写导演名字无效**——必须拆成 *镜长 + 景别 + 运镜 + 色温 + 光位 + 质感* 写进正文，导演名放风格句尾做锚点。最多借 2 位、每维度只服一位（见 `director-anchors-western.md` / `director-anchors-asian.md` / `dp-cinematographer-anchors.md`）。
+Read only when the user names a director / film / "XX vibe", and **writing just the name is useless** — must break into *shot-length + shot-size + camera-move + color-temp + light-position + texture* in the body, with the name as anchor at the style line's end. Borrow at most 2, one per dimension (see `director-anchors-western.md` / `director-anchors-asian.md` / `dp-cinematographer-anchors.md`).
 
-**欧美导演（32 位）**
+**Western directors (32)**
 
-| 导演 | 招牌签名 | 适合的电影风格 |
+| Director | Signature | Suitable film styles |
 |---|---|---|
-| 斯坦利·库布里克 | 绝对对称一点透视、超广角缓慢逼近、冷峻凝视 | 科幻史诗 / 历史正剧 / 心理惊悚 |
-| 克里斯托弗·诺兰 | IMAX 大画幅实拍、交叉剪辑、1/4 升格重音 | 科幻烧脑 / 悬疑动作 / 历史战争 |
-| 韦斯·安德森 | 中轴对称、粉彩三色板、无影平光、90° 甩摇 | 喜剧 / 文艺 / 怪诞家庭剧 |
-| 保罗·托马斯·安德森 | 穿行长镜、70mm 暖褐、弦乐不安 | 文艺剧情 / 时代群像 / 心理刻画 |
-| 丹尼斯·维伦纽瓦 | 巨物剪影、雾霾橙、低频轰鸣 | 科幻史诗 / 犯罪惊悚 / 战争动作 |
-| 泰伦斯·马力克 | 魔幻时刻、贴地游走、旁白呢喃 | 诗意文艺 / 自然史诗 / 哲学思辨 |
-| 阿方索·卡隆 | 超长手持一镜、65mm 黑白、全景声 | 写实剧情 / 太空科幻 / 家庭伦理 |
-| 达米恩·查泽雷 | 鼓点对齐剪辑、360° 环绕、单色追光 | 音乐歌舞 / 体育励志 / 心理惊悚 |
-| 昆汀·塔伦蒂诺 | 后备箱仰拍、脚部特写、墨西哥三角对峙 | 犯罪黑帮 / 暴力美学 / 西部动作 |
-| 科恩兄弟 | 广角低机位、荒诞对称、冷幽默静止 | 黑色喜剧 / 犯罪悬疑 / 荒诞西部 |
-| 乔治·米勒 | 中心构图追车、抽帧加速、饱和橙蓝 | 动作飙车 / 末日废土 / 科幻 |
-| 迈克尔·贝 | 360° 环绕、逆光光晕、英雄仰角 | 爆裂动作 / 军事战争 / 科幻特效 |
-| 詹姆斯·卡梅隆 | 水下实拍、蓝绿冷调、规模揭示三段式 | 科幻冒险 / 深海探索 / 灾难史诗 |
-| 乔丹·皮尔 | 正面凝视、日光恐怖、缓慢推脸 | 心理惊悚 / 社会恐怖 / 荒诞讽刺 |
-| 蒂姆·波顿 | 哥特螺旋、黑白紫、广角畸变 | 哥特奇幻 / 暗黑童话 / 怪诞喜剧 |
-| 吉尔莫·德尔·托罗 | 青绿琥珀双色、机械与有机 | 暗黑奇幻 / 哥特恐怖 / 怪兽科幻 |
-| 大卫·林奇 | 红帘幕、工业嗡鸣、诡异日常 | 超现实惊悚 / 悬疑心理 / 文艺怪诞 |
-| 马丁·斯科塞斯 | 长镜穿行、定格旁白、滚石点唱 | 黑帮犯罪 / 人物传记 / 音乐纪录片 |
-| 史蒂文·斯皮尔伯格 | Spielberg Face、景深调度、dolly zoom | 冒险科幻 / 战争史诗 / 温情家庭 |
-| 文斯·吉利根 | 广角物件视角、静默张力 | 犯罪悬疑 / 写实惊悚 / 人物剧 |
-| 大卫·芬奇 | 精密、暗部、无摩擦运镜 | 心理惊悚 / 犯罪悬疑 / 冷峻科幻 |
-| 米格尔·萨波奇尼克 | 混战主观、信息盲区 | 科幻战争 / 动作混战 / 权力剧 |
-| 加里·福永 | 不间断长镜、斯坦尼康交接、实时紧张 | 战争写实 / 长镜惊悚 / 动作 |
-| 约翰·雷克 | 去饱和灰绿、苏联工业、静默恐惧 | 冷峻惊悚 / 历史战争 / 政治悬疑 |
-| 让-马克·瓦雷 | 0.2s 碎片闪回、自然光手持、耳机音源 | 文艺剧情 / 传记励志 / 心理创伤 |
-| 雷德利·斯科特 | 烟雾光束、史诗质感 | 科幻史诗 / 历史战争 / 黑色电影 |
-| 斯派克·琼斯 | 一镜到底、身体动能、实拍奇观 | 文艺科幻 / 荒诞喜剧 / 情感奇幻 |
-| 道格尔·威尔逊 | 情感叙事、90 秒微电影 | 品牌微电影 / 情感叙事 / 温情广告 |
-| 乔纳森·格雷泽 | 单一超现实隐喻、黑白史诗慢镜 | 艺术惊悚 / 超现实寓言 / 极简科幻 |
-| 塔西姆·辛 | 美术奇观、单帧即海报、珠宝色 | 视觉奇观 / 奇幻广告 / 美术史诗 |
-| 罗曼·加夫拉斯 | 大规模群众、手持追随、泥土烟火 | 音乐 MV / 动作纪实 / 社会抗议 |
-| 马丁·德·图拉 | 北欧超现实、冷灰自然光、缓慢诡异 | 北欧惊悚 / 超现实文艺 / 冷峻悬疑 |
+| Stanley Kubrick | absolute symmetry one-point, ultra-wide slow approach, cold stare | sci-fi epic / historical drama / psychological thriller |
+| Christopher Nolan | IMAX large-format, cross-cut, 1/4 slow-mo accent | sci-fi mind-bender / suspense action / historical war |
+| Wes Anderson | central-axis symmetry, pastel tri-tone, shadowless flat, 90° whip-pan | comedy / auteur / quirky family |
+| Paul Thomas Anderson | long tracking, 70mm warm-brown, uneasy strings | auteur drama / era ensemble / psychological |
+| Denis Villeneuve | giant silhouette, haze orange, low-freq rumble | sci-fi epic / crime thriller / war action |
+| Terrence Malick | magic hour, ground-hugging drift, whispered VO | poetic auteur / nature epic / philosophical |
+| Alfonso Cuarón | ultra-long handheld one-take, 65mm B&W, surround sound | realist drama / space sci-fi / family ethics |
+| Damien Chazelle | drum-aligned edit, 360° orbit, single-color follow-spot | musical / sports inspire / psychological thriller |
+| Quentin Tarantino | trunk low-angle, foot close-up, Mexican standoff | crime gangster / violence-aesthetic / western action |
+| Coen Brothers | wide low-angle, absurd symmetry, cold-humor stillness | black comedy / crime-noir / absurd western |
+| George Miller | center-frame car-chase, frame-skip accelerate, saturate orange-blue | action race / apocalypse wasteland / sci-fi |
+| Michael Bay | 360° orbit, backlight bloom, hero low-angle | explosive action / military war / sci-fi VFX |
+| James Cameron | underwater real, blue-green cold, scale-reveal three-act | sci-fi adventure / deep-sea / disaster epic |
+| Jordan Peele | frontal stare, daylight horror, slow push-to-face | psychological thriller / social horror / absurd satire |
+| Tim Burton | gothic spiral, black-white-purple, wide distortion | gothic fantasy / dark fairy-tale / quirky comedy |
+| Guillermo del Toro | teal-amber dual-tone, machine & organic | dark fantasy / gothic horror / monster sci-fi |
+| David Lynch | red curtain, industrial hum, eerie daily | surreal thriller / suspense psych / auteur weird |
+| Martin Scorsese | long-take roam, freeze-frame VO, rock jukebox | gangster crime / biopic / music doc |
+| Steven Spielberg | Spielberg Face, depth staging, dolly zoom | adventure sci-fi / war epic / warm family |
+| Vince Gilligan | wide object-POV, silent tension | crime-noir / realist thriller / character drama |
+| David Fincher | precise, shadow, frictionless camera | psychological thriller / crime-noir / cold sci-fi |
+| Miguel Sapochnik | melee subjective, info-blind zone | sci-fi war / action melee / power drama |
+| Gareth Evans | uninterrupted long-take, steadicam handoff, real-time tension | war realism / long-take thriller / action |
+| Johan Renck | desaturated gray-green, Soviet industrial, silent dread | cold thriller / historical war / political suspense |
+| Jean-Marc Vallée | 0.2s fragment flashback, natural-light handheld, headphone source | auteur drama / biopic inspire / trauma psych |
+| Ridley Scott | smoke light-beam, epic texture | sci-fi epic / historical war / film-noir |
+| Spike Jonze | one-take, physical kinetic, practical spectacle | auteur sci-fi / absurd comedy / emotional fantasy |
+| Dougal Wilson | emotional narrative, 90s micro-film | brand micro-film / emotional narrative / warm ad |
+| Jonathan Glazer | single surreal metaphor, B&W epic slow-mo | art thriller / surreal fable / minimal sci-fi |
+| Tarsem Singh | art spectacle, single-frame-as-poster, jewel color | visual spectacle / fantasy ad / art epic |
+| Romain Gavras | mass crowd, handheld follow, dirt & fireworks | music MV / action doc / social protest |
+| Martin de Thurah | Nordic surreal, cold-gray natural light, slow eerie | Nordic thriller / surreal auteur / cold suspense |
 
-**亚洲导演（31 位）**
+**Asian directors (31)**
 
-| 导演 | 招牌签名 | 适合的电影风格 |
+| Director | Signature | Suitable film styles |
 |---|---|---|
-| 徐克 | 抽帧顿挫、垂直 Z 轴、快切必保全景 | 武侠奇幻 / 动作喜剧 / 视觉特效 |
-| 胡金铨 | 竹林、极短镜头拼贴、京剧锣鼓节拍 | 武侠 / 历史古装 / 京剧美学 |
-| 程小东 | 飘逸吊威亚、织物飞舞、逆光尘埃 | 武侠动作 / 古装奇幻 / 飘逸打斗 |
-| 袁和平 | 实打长镜、中景为主、不靠剪辑造假 | 功夫武侠 / 动作写实 / 喜剧武打 |
-| 王家卫 | 抽帧、霓虹、广角变形、画外独白 | 都市爱情 / 文艺 / 霓虹夜景 |
-| 侯孝贤 | 固定长镜远观、自然光、人物进出画 | 文艺剧情 / 历史史诗 / 生活流 |
-| 蔡明亮 | 极端静止长镜、水与潮湿、几乎无对白 | 艺术电影 / 缓慢写实 / 情欲隐喻 |
-| 贾樟柯 | 县城纪实、变焦推、流行歌当时代标记 | 县城纪实 / 时代变迁 / 社会写实 |
-| 毕赣 | 长镜梦游、绿与红、潮湿岩洞 | 梦境文艺 / 悬疑诗意 / 潮湿奇幻 |
-| 姜文 | 高饱和阳光、快速对话调度、荒诞热烈 | 荒诞历史 / 热血喜剧 / 作者叙事 |
-| 张艺谋 | 单色块、人海阵列、仪式感 | 历史史诗 / 视觉奇观 / 民俗仪式 |
-| 杜琪峰 | 静止对峙、群像站位、冷蓝夜 | 黑帮枪战 / 警匪悬疑 / 冷峻都市 |
-| 李安 | 克制的对称、情感张力、水与绿 | 家庭伦理 / 武侠哲理 / 文艺剧情 |
-| 陈可辛 | 特写驱动、暖调市井、时代群像 | 时代群像 / 温情剧情 / 商业文艺 |
-| 刁亦男 | 黑色霓虹雪夜、荒诞冷幽默、长镜追随 | 黑色电影 / 霓虹犯罪 / 荒诞冷幽默 |
-| 乌尔善 | 东方奇幻的实拍质感 | 东方奇幻 / 神话史诗 / 视觉特效 |
-| 黑泽明 | 多机位长焦、风雨尘为角色、横向队列 | 时代剧 / 武侠 / 战争人性 |
-| 小津安二郎 | 榻榻米低机位、绝对正面、空镜 | 家庭伦理 / 日常诗意 / 战后日本 |
-| 是枝裕和 | 生活流长镜、饭桌群像、儿童视角 | 家庭温情 / 生活流 / 社会写实 |
-| 北野武 | 暴力与静止交替、Kitano blue、无配乐沉默 | 暴力诗意 / 黑帮 / 冷幽默 |
-| 岩井俊二 | 过曝逆光柔雾、青春回忆、高调白 | 青春爱情 / 文艺怀旧 / 高调柔光 |
-| 三池崇史 | 极端风格化暴力美学 | 极端暴力 / 黑帮 / Cult 奇幻 |
-| 奉俊昊 | 横向平移揭示阶层、垂直空间隐喻 | 类型混合 / 社会讽刺 / 科幻怪兽 |
-| 朴赞郁 | 华丽运镜、对称暴力、镜面反射 | 复仇惊悚 / 华丽暴力 / 心理悬疑 |
-| 李沧东 | 长镜纪实、自然光、留白结尾 | 文艺写实 / 社会批判 / 慢镜诗意 |
-| 罗泓轸 | 类型片紧张调度、泥泞追逐 | 类型惊悚 / 泥泞动作 / 犯罪 |
-| 宫崎骏 | 手绘水彩、飞行动线、留白的"间" | 动画奇幻 / 飞行冒险 / 治愈家庭 |
-| 新海诚 | 光晕耀斑、极致天空、雨与玻璃 | 青春爱情 / 灾难奇幻 / 光影写实 |
-| 今敏 | 匹配剪辑跳转、密集城市、心理蒙太奇 | 心理惊悚 / 动画科幻 / 都市迷幻 |
-| 押井守 | 低饱和青灰赛博、静止长镜、水面倒影 | 赛博朋克 / 哲学科幻 / 冷峻动画 |
-| 京都动画式 | 细腻日常光影、逆光通透 | 日常校园 / 治愈动画 / 细腻抒情 |
+| Tsui Hark | frame-skip stutter, vertical Z-axis, full-shot on fast-cut | wuxia-fantasy / action-comedy / VFX |
+| King Hu | bamboo forest, ultra-short-shot collage, Peking-opera percussion beat | wuxia / historical costume / opera aesthetic |
+| Ching Siu-tung | airy wire-fu, fabric flutter, backlit dust | wuxia-action / costume-fantasy / airy combat |
+| Yuen Woo-ping | real-fight long-take, medium-shot based, no edit faking | kung-fu wuxia / realistic action / comedy-fight |
+| Wong Kar-wai | frame-skip, neon, wide distortion, off-screen monologue | urban romance / auteur / neon night |
+| Hou Hsiao-hsien | fixed long-take distant view, natural light, characters enter/exit frame | auteur drama / historical epic / life-flow |
+| Tsai Ming-liang | extreme static long-take, water & damp, almost no dialogue | art film / slow realism / desire metaphor |
+| Jia Zhangke | county-town documentary, zoom-push, pop song as era marker | county documentary / era change / social realism |
+| Bi Gan | long-take sleepwalk, green & red, damp cave | dream auteur / suspense-poetic / damp fantasy |
+| Jiang Wen | high-sat sunlight, fast-dialogue staging, absurd fervor | absurd history / hot-blooded comedy / auteur narrative |
+| Zhang Yimou | mono color-block, crowd array, ritual sense | historical epic / visual spectacle / folk ritual |
+| Johnnie To | static standoff, group staging, cold-blue night | gangster gunfight / crime-noir / cold urban |
+| Ang Lee | restrained symmetry, emotional tension, water & green | family ethics / wuxia philosophy / auteur drama |
+| Peter Chan | close-up driven, warm urban, era ensemble | era ensemble / warm drama / commercial auteur |
+| Diao Yinan | neon-noir snow night, absurd cold-humor, long-take follow | film-noir / neon crime / absurd cold-humor |
+| Wu Ershan | Eastern-fantasy real-shot texture | Eastern fantasy / myth epic / VFX |
+| Akira Kurosawa | multi-cam long-lens, wind-rain-dust as characters, lateral lineup | period drama / wuxia / war humanity |
+| Yasujirō Ozu | tatami low-angle, absolute frontal, empty-shot | family ethics / daily poetry / post-war Japan |
+| Hirokazu Koreeda | life-flow long-take, dinner-table ensemble, child POV | family warmth / life-flow / social realism |
+| Takeshi Kitano | violence & stillness alternation, Kitano blue, silent no-score | violent poetry / gangster / cold humor |
+| Shunji Iwai | overexposed backlight soft-haze, youth memory, high-key white | youth romance / auteur nostalgia / high-key soft |
+| Takashi Miike | extreme stylized violence aesthetic | extreme violence / gangster / Cult fantasy |
+| Bong Joon-ho | lateral pan reveals class, vertical-space metaphor | genre-mix / social satire / sci-fi monster |
+| Park Chan-wook | gorgeous camera, symmetric violence, mirror reflection | revenge thriller / gorgeous violence / psych suspense |
+| Lee Chang-dong | long-take realism, natural light, blank ending | auteur realism / social critique / slow-poetic |
+| Na Hong-jin | genre tense staging, muddy chase | genre thriller / muddy action / crime |
+| Hayao Miyazaki | hand-painted watercolor, flight line, "ma" negative space | animation fantasy / flight adventure / healing family |
+| Makoto Shinkai | flare/bloom, extreme sky, rain & glass | youth romance / disaster-fantasy / light-shadow realism |
+| Satoshi Kon | match-cut jump, dense city, psych montage | psych thriller / animation sci-fi / urban trance |
+| Mamoru Oshii | low-sat teal-gray cyber, locked long-take, water reflection | cyberpunk / philosophy sci-fi / cold animation |
+| Kyoto Animation style | delicate daily light, translucent backlight | campus daily / healing animation / delicate lyric |
 
-**摄影指导 DP（15 位，专管光影 / 色调 / 器材）**
+**Director of Photography DP (15, governs light/shadow · color · gear)**
 
-| 摄影指导 | 招牌光影 | 适合的电影风格 |
+| DP | Signature light | Suitable film styles |
 |---|---|---|
-| 罗杰·迪金斯 | 单一动机光、极简、可见光源入画 | 写实剧情 / 西部 / 冷峻犯罪 |
-| 艾曼努尔·卢贝兹基 | 全自然光、超广角贴脸、魔幻时刻 | 自然主义 / 魔幻史诗 / 长镜文艺 |
-| 格雷格·弗雷泽 | 低照度大画幅、雾化柔焦、实用光源 |
-| 霍伊特·范·霍特玛 | IMAX 65mm、红外、冷蓝灰 | 科幻史诗 / 冷调惊悚 / 战争动作 |
-| 达柳斯·康吉 | 高对比暗部、银保留、病态绿黄 | 心理惊悚 / 历史剧情 / 病态科幻 |
-| 罗伯特·理查德森 | 顶部热点光、高对比、白光晕 | 历史史诗 / 战争 / 强烈戏剧 |
-| 布拉德福德·杨 | 极低照度、深肤色正确曝光 | 非裔题材 / 文艺剧情 / 亲密纪实 |
-| 蕾切尔·莫里森 | 自然主义暖质感、手持亲密感 | 运动纪实 / 自然主义 / 社会剧情 |
-| 亚努什·卡明斯基 | 过曝白窗光、45° 快门、烟雾散射 | 战争史诗 / 历史剧情 / 温情家庭 |
-| 让-伊夫·埃斯科菲耶 | 街头硬光、高饱和肤色、纪实骨架 | 欧洲文艺 / 街头纪实 / 社会剧情 |
-| 杜可风 | 手持贴身广角、霓虹色偏、抽帧拖影 | 都市霓虹 / 文艺爱情 / 手持纪实 |
-| 李屏宾 | 东方留白、自然光与窗、缓慢横移 | 东方文艺 / 家庭剧情 / 自然光影 |
-| 赵小丁 | 单色块造型光、大面积色彩填充、东方奇观 | 东方奇观 / 历史史诗 / 视觉大片 |
-| 近藤龙人 | 日本生活自然光、窗光日常、浅淡通透 | 日本生活 / 青春文艺 / 家庭温情 |
-| 洪坰杓 | 阶层的光、黄昏蓝调、雨 | 社会阶层 / 都市爱情 / 雨夜文艺 |
+| Roger Deakins | single-motivated light, minimal, visible source in frame | realist drama / western / cold crime |
+| Emmanuel Lubezki | full natural light, ultra-wide close-face, magic hour | naturalism / magic epic / long-take auteur |
+| Greig Fraser | low-light large-format, haze soft-focus, practical source | sci-fi epic / cold thriller / war action |
+| Hoyte van Hoytema | IMAX 65mm, infrared, cold blue-gray | sci-fi epic / cold thriller / war action |
+| Darius Khondji | high-contrast shadows, silver retained, sickly green-yellow | psych thriller / historical drama / sickly sci-fi |
+| Robert Richardson | top hotspot light, high contrast, white bloom | historical epic / war / strong drama |
+| Bradford Young | ultra-low light, correct exposure of dark skin | African-American / auteur drama / intimate doc |
+| Rachel Morrison | naturalist warm texture, handheld intimacy | sports doc / naturalism / social drama |
+| Janusz Kamiński | overexposed white window-light, 45° shutter, smoke scatter | war epic / historical drama / warm family |
+| Jean-Yves Escoffier | street hard light, high-sat skin, doc skeleton | European auteur / street doc / social drama |
+| Christopher Doyle | handheld intimate wide, neon color cast, frame-skip drag | urban neon / auteur romance / handheld doc |
+| Mark Lee Ping-bing | Eastern negative space, natural light & window, slow lateral | Eastern auteur / family drama / natural light |
+| Zhao Xiaoding | mono color-block sculpt light, large color fill, Eastern spectacle | Eastern spectacle / historical epic / visual blockbuster |
+| Tatsuo Kondō | Japanese life natural light, window daily, pale translucent | Japanese life / youth auteur / family warmth |
+| Hong Kyung-pyo | light of class, dusk blue, rain | social class / urban romance / rainy-night auteur |
 
 ---
 
 ## License
 
-技能内容供个人与团队学习、使用、二次开发。如需引用参考库中的数据，请注明来源。
+Skill content is for personal and team learning, use, and secondary development. If you cite data from the reference library, please credit the source.
