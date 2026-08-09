@@ -66,7 +66,7 @@ description: 把用户的简单故事情节/创意，转换为符合 MiniMax H3 
 - **画幅**：
   - ① 文生 / ② 单图 / ④ 多图参考 / ⑤ 视频编辑 / ⑥ 数字人 → 用户确认（可选 21:9 / 16:9 / 4:3 / 1:1 / 3:4 / 9:16）。单图模式即使图只是参考人物形象，画幅仍要确认；数字人默认 9:16 或 16:9。
   - ③ 首尾帧 → 由素材决定，不另设。
-- 画幅是接口/界面设置项，**不要写进提示词正文占字数**；只在末尾的简短中文说明里记录。
+- 画幅与时长是**必须写进提示词骨架首行的硬字段**（统一用 `[时长/画幅]`，如 `10s / 16:9`）。所有模式（①②③④⑤⑥）的交付物都不得省略该字段——这是防止“已向用户确认却在输出里丢失”的核心约束。末尾的简短中文说明也照常记录一份。
 
 ### 步骤 3.4 · 题材语法加载（必做 · 第一优先）
 
@@ -145,6 +145,7 @@ C · 极简高级向  —— 一句话画面 ｜ ASL / 光色 / 关键手法
 <Audio 1>：<角色类别——需匹配/复用的具体内容>
 （token 固定英文、不随中英文变化；缺哪类就不写哪行；类别名见下方角色词典，作用写具体）
 
+[时长/画幅]         ← 必写首字段！值为步骤 3 已确认的时长+画幅（如 10s / 16:9），不得留空或省略
 [核心创意]          ← 一句话嵌六要素：主体/动作/环境/镜头/光线风格/限制
 [主体] 在 [场景] 中 [动作]，以 [运镜] 拍摄，[光线/氛围]。
 
@@ -210,7 +211,7 @@ non_diegetic_music（非叙事音乐）：[风格/情绪，或 N/A]
 
 向用户输出：
 
-1. **中英双语提示词**（两段，结构一致）。
+1. **中英双语提示词**（两段，结构一致）。**硬约束：每个模式提示词骨架的首行必须是 `[时长/画幅]` 字段**（值为步骤 3 已向用户确认的结果，如 `15s / 16:9`）；凡首行缺少该字段的交付物视为未完成，必须补写后再发出。
 2. **简短中文说明**：本次模式 + 素材分工（哪些文件负责什么）+ 时长/画幅 + 关键约束（PRESERVE/AVOID 要点）。
 3. **迭代指引**："看到结果后，一次只改一个变量（见下方单变量修复表），重新生成对比。"
 
@@ -236,7 +237,7 @@ non_diegetic_music（非叙事音乐）：[风格/情绪，或 N/A]
 ### ① 文生视频（省略参考块）
 ```
 中文版：
-[时长], [画幅], [风格]。
+[时长/画幅], [风格]。
 [主体外貌] 位于 [环境]。
 先发生 [动作1]，接着 [动作2]。镜头以 [速度] 进行 [一种运镜]。
 [可见光线/氛围]。最后停在 [明确结束状态]。
@@ -245,7 +246,7 @@ overall_soundscape：[具体声音]；non_diegetic_music：[风格 或 N/A]
 PRESERVE：[…]  AVOID：[…]
 
 英文版：
-[Duration], [aspect], [style].
+[Duration/aspect], [style].
 [Subject] is in [environment]. [Action1], then [action2]. Camera [one camera move] at [speed].
 [Visible light/mood]. End on [clear end state]. Keep [constraints].
 overall_soundscape: […]; non_diegetic_music: [… or N/A]
@@ -255,6 +256,7 @@ PRESERVE: […]  AVOID: […]
 ### ② 单图生视频（图作首帧）
 ```
 中文版：
+[时长/画幅]
 以 <Picture 1> 作为视频首帧，完整保留 [面部/服装/颜色/构图/光线]。
 [主体] 先做 [第一个小动作]，再连续完成 [主要动作]。
 镜头进行 [一种运镜]，同时 [背景或光线变化]。
@@ -263,6 +265,7 @@ overall_soundscape：[…]；non_diegetic_music：[… 或 N/A]
 PRESERVE：[锁定图中特征]  AVOID：[面部变形/闪烁…]
 
 英文版：
+[Duration/aspect]
 Use <Picture 1> as the first frame; preserve [face/costume/color/composition/lighting].
 [Subject] does [small action], then [main action]. Camera [one move] while [bg/light change].
 Keep [identity/costume/shape/layout/product details].
@@ -273,6 +276,7 @@ PRESERVE: […]  AVOID: […]
 ### ③ 首尾帧（图1首/图2尾）
 ```
 中文版：
+[时长/画幅]
 <Picture 1> 作为 0 秒首帧，<Picture 2> 作为 [时长] 秒尾帧。
 使用一个连续镜头完成变化：开始时 [<Picture 1> 的姿势/服装/构图/光线]；
 [中间逐步发生的动作路径]；最终准确落在 <Picture 2> 的 [姿势/状态/构图/光线]。
@@ -281,6 +285,7 @@ PRESERVE: […]  AVOID: […]
 PRESERVE：[图1图2 间应稳定的元素]  AVOID：[跳变/闪烁…]
 
 英文版：
+[Duration/aspect]
 <Picture 1> aligns with 0.00s; <Picture 2> aligns with [X]s.
 One continuous shot: begin in <Picture 1>'s [pose/costume/composition/lighting];
 [gradual mid-path actions]; end exactly on <Picture 2>'s [pose/state/composition/light].
@@ -292,6 +297,7 @@ PRESERVE: […]  AVOID: […]
 ### ④ 多图参考（全能参考）
 ```
 中文版：
+[时长/画幅]
 [参考素材说明]
 <Picture 1>：角色参考——锁定人脸/发型/身材
 <Picture 2>：物体参考——锁住颜色/扣件/材质
@@ -308,6 +314,7 @@ PRESERVE：[每条点名要保留的特征]  AVOID：[…]
 ### ⑤ 视频编辑（对已有视频替换）
 ```
 中文版：
+[时长/画幅]
 <Video 1> 是源视频（保留其 [人物外观/表演/运镜/时序]，仅改 [目标]）。
 <Picture 1> 是 [新背景/新物体——保留其具体特征]。
 把 <Video 1> 中的 [旧物体] 替换为 [新物体/新背景]，重打光使 [主光方向] 匹配新背景。
@@ -316,6 +323,7 @@ overall_soundscape：[…]；non_diegetic_music：[… 或 N/A]
 PRESERVE：[源视频需原样保留的部分]  AVOID：[穿帮/光线错位…]
 
 英文版：
+[Duration/aspect]
 <Video 1> is the source clip (preserve its [appearance/performance/camera/timing]; only [target] changes).
 <Picture 1> is the [new background/object — preserve its specifics].
 Replace [old] in <Video 1> with [new], relight to match [key light direction].
@@ -331,6 +339,7 @@ PRESERVE: […]  AVOID: […]
 
 ```
 中文版：
+[时长/画幅]
 <Picture 1>：数字人角色参考——锁定人脸/发型/服装/虚拟形象造型，全程不变
 [可选] <Audio 1>：声音参考——口播音色/语速匹配这条音轨，或唱歌/伴奏的节奏与咬字基准，或直接用作配音
 [可选] <Picture 2>/<Video 1>：背景/场景参考——锁定演播厅/舞台/直播间/虚拟背景
@@ -341,6 +350,7 @@ PRESERVE: […]  AVOID: […]
 PRESERVE：[数字人形象/服装稳定，口型对齐 <80ms，随机眨眼，主体始终是同一人]  AVOID：[形象漂移/口型错位/面部变形/等间隔机械眨眼/硬侧光/在咬字或歌词中途切镜]
 
 英文版：
+[Duration/aspect]
 <Picture 1>: digital human character reference — preserve face/hair/costume/avatar look, unchanged throughout.
 [opt] <Audio 1>: voice/music reference — match its timbre/pace or song beat & enunciation; or use directly as voiceover.
 [opt] <Picture 2>/<Video 1>: background/scene reference — studio/stage/livestream/virtual set.
