@@ -424,14 +424,15 @@
 
 ### 虚拟人 / 数字人口播 Virtual Human Presenter
 
-- **母题动词**：转头 Turn-head、点头 Nod、抬眉 Brow-raise、眨眼 Blink、手势 Gesture
-- **核心镜头 ①**：正面固定 MCU（胸线至头顶），机位与视线等高，**全程不换景别**
-- **核心镜头 ②**：15% 极缓匀速推入，仅用于强调段落——数字人做大幅运动会暴露渲染破绽
-- **核心镜头 ③**：侧 20° 备用机位，只用于长视频换气；**超过 30° 会暴露侧脸建模的转折**
-- **光色**：正面柔光蝶光（butterfly）**5600K** + 两侧 −1.5 档补光，**避免侧光与硬光**——侧光会把面部建模的转折面直接照成塑料；光比 **1.3:1**，另加一路弱边缘光让头发与背景分离
-- **节奏**：**ASL 5.0–10.0s**，10s 内 **≤2 镜**。**微表情与眨眼频率是恐怖谷的分水岭**：眨眼 12–20 次/分钟且间隔随机，眉眼随语义微动，口型对齐误差需 <80ms
-- **头号翻车点**：① 眨眼机械等间隔或长时间不眨，观众说不出哪里怪但会强烈不适，看不过 8s；② 想用戏剧化侧光 / 顶光"提升质感"，结果把模型缺陷放大，越打越假
-- **英文锚点**：`digital human presenter, locked-off frontal medium close-up at eye level, flat 5600K butterfly softlight with -1.5 stop side fill, no hard or raking light, 1.3:1 ratio, subtle hair rim separation, natural randomized blinking 15 times per minute, single 8 second take`
+- **母题动词**：转头 Turn-head、点头 Nod、抬眉 Brow-raise、眨眼 Blink、手势 Gesture、前倾 Lean-in、指向 Point、小幅走动 Step、拿道具 Pick-up
+- **核心镜头 ①**：正面 MCU 起手（胸线至头顶），机位略高于视线 2–3°，人物居中或落 1/3 线——**这是主镜头，不是唯一镜头**
+- **核心镜头 ②**：侧 15–45° 第二机位 MCU/MS，用于说话停顿处跳切；两个机位焦段必须一致（同为 50mm 或 85mm），换机位不换光位（换光即换脸）
+- **核心镜头 ③**：手部 / 道具 / 桌面 ECU 插入镜——专门用来"藏切点"，在数字人做大动作或需要剪辑时切给非面部画面，既丰富又避开建模的不连续
+- **核心镜头 ④**（唱歌 / MV）：低角度仰拍 WS 接正面 MCU，配合律动；景别在 MCU↔MS↔WS 之间随乐句起伏，但主体始终是同一个数字人
+- **光色**：正面柔光蝶光（butterfly）**5600K** + 两侧 −1.5 档补光，光比 **1.3:1**；允许机位角度带来的光位自然偏移。**避免会照出建模转折面的硬侧光 / 顶光**——侧光会把面部建模的转折面直接照成塑料。另加一路弱边缘光让头发与背景分离
+- **节奏**：**口播 ASL 3.0–6.0s**，**剪辑点卡在语义停顿 / 句尾呼吸处，不在句中切断**（按秒数机械切会把人剪成结巴）；唱歌随节拍，**剪辑点卡在乐句换气处 / 强拍 / 重音**，绝不切在咬字或歌词中途。10s 内 **≤4 镜**（口播）/ **≤6 镜**（MV）。**微表情与眨眼频率是恐怖谷的分水岭**：眨眼 12–20 次/分钟且间隔随机，眉眼随语义微动，口型对齐误差需 <80ms
+- **头号翻车点**：① 眨眼机械等间隔或长时间不眨，观众说不出哪里怪但会强烈不适，看不过 8s；② 想用戏剧化侧光 / 顶光"提升质感"，结果把模型缺陷放大，越打越假；③ 肢体完全凝固只剩嘴动——数字人级的僵硬感主要来自"身体不动"，要给贴合语义的手势与重心转移，但动作要合理不抽搐
+- **英文锚点**：`digital human presenter, frontal medium close-up at eye level, cut on sentence-breaths between frontal MCU and a 30° side MCU of the same focal length, hand/prop ECU inserts hiding the cuts, soft 5600K butterfly key with -1.5 stop side fill and hair rim, 1.3:1, randomized blinking 15 per minute, lip-sync <80ms, natural gestures and weight shifts, no hard or raking light`
 
 ### ASMR / 解压视频 ASMR & Oddly Satisfying
 
@@ -601,24 +602,26 @@
 
 ### 数字人 / AI 主播进阶 Digital Human Advanced
 
-- **母题动词**：眨眼 Blink、微侧头 Micro-tilt、抿嘴 Lip-press、吸气 Inhale、停顿 Pause
-- **核心镜头 ①**：正面固定 MCU（胸线至头顶），机位与视线等高，**一镜到底不切**——每切一次就要重新建立一次可信度
-- **核心镜头 ②**：侧 15–20° 备用机位，仅用于长内容换气，且必须与主机位同一套光位（换光即换脸）
-- **核心镜头 ③**：手部或道具 ECU 插入镜，专门用来"藏切点"——需要剪辑时切给非面部画面，避开建模的不连续
+- **母题动词**：眨眼 Blink、微侧头 Micro-tilt、抿嘴 Lip-press、吸气 Inhale、停顿 Pause、律动 Sway、打拍 Beat-tap、张开臂 Open-arm、小幅舞 Step-dance
+- **核心镜头 ①**：正面 MCU 起手（胸线至头顶），机位与视线等高——**是主镜头不是唯一镜头**；允许随语义在 MCU↔MS↔WS 间跳变
+- **核心镜头 ②**：侧 15–45° 备用机位，用于说话停顿 / 歌曲换气处跳切，且必须与主机位同一套光位（换光即换脸）；放宽旧"禁超 30°"——但极端侧脸（>60°）仍会暴露建模转折，靠插入镜规避而非永久避开
+- **核心镜头 ③**：手部 / 道具 / 乐器 ECU 插入镜，专门用来"藏切点"——数字人做大动作或唱歌打拍时切给非面部画面，既丰富又避开建模的不连续
+- **核心镜头 ④**（唱歌 / MV）：低角度仰拍 WS 接正面 MCU，景别随乐句起伏；可加入小幅走位与舞蹈手势，但主体始终是同一数字人、同一套服装
 - **光色**：正面柔光为主 **5000K**，另加一路 **−2 档**轻微侧位补光给鼻梁与下颌一点转折——**完全平光让脸像贴图，硬侧光又会照出建模的多边形转折面，这一档是唯一的安全区**；光比 **1.4:1**，加一路弱边缘光把头发从背景里分离
-- **节奏**：**ASL 8.0–15.0s**，10s 内 **≤2 镜**。**恐怖谷的分水岭是眨眼与微表情**：眨眼每 3–5 秒一次且间隔不规律、单次 100–150ms；口型对齐误差 <80ms；每 10s 至少一次非语义微动作（吞咽、微侧头、眉梢一动）
-- **头号翻车点**：① 完美对称的脸配恒定节拍的眨眼——观众说不出哪里不对但 8s 内就会划走，解法是主动做不对称（一侧眉毛略高、发型偏分、领口不齐）；② 走**写实数字人**路线却做不到微表情——此时应当退到**风格化虚拟形象**（明确的非人肤质、简化面部结构、二次元或 3D 卡通比例）。风格化根本不进恐怖谷，是更安全的路线而非降级，两条路线必须在开拍前二选一，不能骑墙
-- **英文锚点**：`photoreal digital human presenter, locked-off frontal medium close-up at eye level, 5000K soft frontal key with a -2 stop side fill defining the nose and jawline, 1.4:1 ratio, subtle facial asymmetry, irregular blinks every 3 to 5 seconds, single unbroken 12 second take`
+- **节奏**：**口播 ASL 5.0–8.0s，剪辑点卡在语义停顿 / 换气处**；**唱歌 ASL 随节拍，剪辑点卡在乐句换气 / 强拍 / 重音**，绝不切在咬字或歌词中途**；10s 内 **≤4 镜**（口播）/ **≤6 镜**（MV）。**恐怖谷的分水岭是眨眼与微表情**：眨眼每 3–5 秒一次且间隔不规律、单次 100–150ms；口型对齐误差 <80ms；每 10s 至少一次非语义微动作（吞咽、微侧头、眉梢一动）
+- **头号翻车点**：① 完美对称的脸配恒定节拍的眨眼——观众说不出哪里不对但 8s 内就会划走，解法是主动做不对称（一侧眉毛略高、发型偏分、领口不齐）；② 走**写实数字人**路线却做不到微表情——此时应当退到**风格化虚拟形象**（明确的非人肤质、简化面部结构、二次元或 3D 卡通比例）。风格化根本不进恐怖谷，是更安全的路线而非降级，两条路线必须在开拍前二选一，不能骑墙；③ 身体凝固只剩嘴动——进阶数字人最忌"头部演讲、身体雕塑"，要给贴合语义的重心转移与手势，唱歌时加入律动与打拍
+- **英文锚点**：`photoreal digital human presenter, frontal medium close-up at eye level as the master shot, cuts between frontal MCU and a 30° side MCU of identical focal length on spoken breaths, hand/instrument ECU inserts hiding cuts, for singing add sway/beat-tap with low-angle WS on downbeats, 5000K soft frontal key with a -2 stop side fill defining nose and jawline, 1.4:1, subtle facial asymmetry, irregular blinks every 3 to 5 seconds, lip-sync <80ms, no hard or raking light`
 
 ### 口播 / 知识博主 Talking Head Creator
 
-- **母题动词**：开口 Open、举例 Cite、反问 Ask-back、强调 Stress、收束 Wrap-up
+- **母题动词**：开口 Open、举例 Cite、反问 Ask-back、强调 Stress、收束 Wrap-up、手势 Gesture、前倾 Lean-in、拿道具 Pick-up、律动 Sway（唱歌）
 - **核心镜头 ①**：MCU 正面对镜，机位略高于视线 2–3°，人物居中或落在 1/3 线，**眼神光必须清晰可见**
 - **核心镜头 ②**：侧 30° 第二机位 MCU，用于跳切换气，两个机位焦段必须一致（同为 50mm 或同为 85mm）
 - **核心镜头 ③**：手势或桌面 ECU 插入镜，用来盖住跳切处的口型跳跃
+- **核心镜头 ④**（唱歌 / MV）：低角度仰拍 WS 接正面 MCU，景别随乐句起伏；可加入小幅走位，但主体始终是同一人、同一套服装
 - **光色**：**眼神光是唯一的必需品**——环形光或柔光箱 45° 前侧作主光 **5200K**，没有 catchlight 眼睛就是死的；背景必须有层次：书架 / 植物 / 氛围灯（**2700K** 暖点光源）与主体拉开 1.5m 以上并暗 2 档；光比 **4:1**，比直播带货有造型力得多
-- **节奏**：**剪辑点跟语义停顿而不跟时长**——有效 ASL 落在 **3.0–6.0s**，10s 内 **≤3 镜**；只在一句话说完的呼吸处切，按秒数机械切会把人剪成结巴
-- **头号翻车点**：① 背景是一面平墙、无纵深无点光源，画面立刻降格成"办公室自拍"，内容再硬也掉一个档次；② 用固定间隔的跳切"提节奏"，论点被切断，观众听不完一个完整推理
+- **节奏**：**剪辑点卡在说话的停顿而非时长**——口播有效 ASL 落在 **3.0–6.0s**，10s 内 **≤3 镜**，只在一句话说完的呼吸处切，按秒数机械切会把人剪成结巴；**唱歌 / MV 时剪辑点卡在乐句换气处 / 强拍 / 重音**，绝不切在咬字或歌词中途。切换前后主体始终是同一个数字人
+- **头号翻车点**：① 背景是一面平墙、无纵深无点光源，画面立刻降格成"办公室自拍"，内容再硬也掉一个档次；② 用固定间隔的跳切"提节奏"，论点被切断，观众听不完一个完整推理；③ 身体凝固只剩嘴动——知识博主最忌"头部演讲、身体雕塑"，要给贴合语义的手势与重心转移
 - **英文锚点**：`talking head creator setup, frontal medium close-up with a clearly visible ring catchlight, 5200K softbox key at 45 degrees, layered background with a bookshelf and a 2700K practical 2 stops down and 1.5 meters behind, 4:1 ratio, jump cuts placed only on semantic pauses`
 
 ---

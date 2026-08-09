@@ -38,7 +38,7 @@ description: 把用户的简单故事情节/创意，转换为符合 MiniMax H3 
 | ③ 首尾帧 | 是（1–2 张图） | 产品展示、状态变化、场景转换，锁住开头与结尾画面 |
 | ④ 多图参考（全能参考） | 是（图/视频/音频混合） | 手上有明确资产要保留（脸、运镜、嗓音、风格图） |
 | ⑤ 视频编辑 | 是（源视频） | 对已有视频做替换（换物体/换背景/换对白），保持运镜光线背景 |
-| ⑥ 数字人 / 虚拟人口播 | 是（1 张角色图，可选声音/背景） | 虚拟人/数字人正面口播、带货、讲解、新闻播报；锁定形象、脚本原文写入、口型对齐 |
+| ⑥ 数字人 / 虚拟人口播·唱歌 | 是（1 张角色图，可选声音/背景） | 虚拟人/数字人口播、带货、讲解、新闻播报、唱歌/MV/虚拟偶像；锁定形象、脚本原文写入、口型对齐、肢体动作丰富、镜头合理切换卡声画节拍 |
 
 **素材与模式不匹配的处理**（硬规则）：
 - 用户选了需素材模式（②③④⑤⑥）却**没传任何文件** → 提示"该模式需要上传 [具体素材]，否则无法锁定主体/运动"，并询问是否改走①文生视频。不要硬生成不可控结果。
@@ -326,25 +326,28 @@ PRESERVE: […]  AVOID: […]
 
 ### ⑥ 数字人 / 虚拟人口播（角色图 + 可选声音 / 背景）
 
-> 数字人片「恐怖谷」分水岭是**形象稳定 + 随机眨眼 + 口型对齐**。命中 `long-tail-genres.md` 的「虚拟人/数字人口播」「数字人进阶」「口播/知识博主」三节，必读完再生成。开拍前先让用户**二选一写实路线或风格化虚拟形象路线**（写实做不到微表情就退风格化，别骑墙）。
+> 数字人片「恐怖谷」分水岭是**形象稳定 + 随机眨眼 + 口型对齐**。命中 `long-tail-genres.md` 的「虚拟人/数字人口播」「数字人进阶」「口播/知识博主」三节，必读完再生成。三节已升级为**既支持口播也支持唱歌/MV**，且允许**丰富肢体动作 + 合理镜头切换（卡在说话停顿或歌曲节拍上）**，不再是"一镜到底的固定死板机位"。开拍前先让用户**二选一写实路线或风格化虚拟形象路线**（写实做不到微表情就退风格化，别骑墙）。
 
 ```
 中文版：
 <Picture 1>：数字人角色参考——锁定人脸/发型/服装/虚拟形象造型，全程不变
-[可选] <Audio 1>：声音参考——口播音色/语速匹配这条音轨，或直接用作配音
-[可选] <Picture 2>/<Video 1>：背景/场景参考——锁定演播厅/办公室/直播间/虚拟背景
-数字人保持正面固定 MCU（胸线至头顶），机位与视线等高，面向镜头自然口播："[脚本原文，原句写清]"。
-允许轻点头、随机眨眼（每 3–5 秒一次、间隔不规律）、手势微动；镜头极缓推入（≤15%）。
-5600K 正面柔光蝶光，两侧 −1.5 档补光，光比 1.3:1；避免侧光与硬光（会照出建模转折面）。
-整体节奏 ASL 5–10s，一次口播一镜到底，非语义处不切。
-PRESERVE：[数字人形象/服装稳定，口型对齐 <80ms，随机眨眼]  AVOID：[形象漂移/口型错位/面部变形/等间隔机械眨眼/硬侧光]
+[可选] <Audio 1>：声音参考——口播音色/语速匹配这条音轨，或唱歌/伴奏的节奏与咬字基准，或直接用作配音
+[可选] <Picture 2>/<Video 1>：背景/场景参考——锁定演播厅/舞台/直播间/虚拟背景
+数字人面向镜头，但允许贴合语义的丰富肢体动作：口播时手势挥动、身体前倾强调、侧身指向、小幅走动、拿起道具；唱歌/MV 时加入律动摇摆、打拍、小幅舞蹈。形象与服装全程锁定同一人。
+镜头不必一镜到底——可在「说话的停顿/句尾呼吸处」或「歌曲的乐句换气处/强拍」切换景别与角度（正面 MCU → 侧 15–45° → 过肩 → 低角度仰拍 → 手部/乐器 ECU 插入镜）；每次切换主体仍是同一个数字人，切点用插入镜或景别跳变自然过渡，绝不切在咬字或歌词中途。
+光色以柔和正面蝶光为主（5600K，两侧 −1.5 档补光，光比 1.3:1），允许机位角度带来的光位自然偏移；避免会照出建模转折面的硬侧光/顶光。
+口播 ASL 3–6s，剪辑点卡在语义停顿；唱歌随节拍，剪辑点卡在乐句换气/重拍。口型对齐误差 <80ms，随机眨眼（每 3–5 秒一次、间隔不规律），每 10s 至少一次非语义微动作。
+PRESERVE：[数字人形象/服装稳定，口型对齐 <80ms，随机眨眼，主体始终是同一人]  AVOID：[形象漂移/口型错位/面部变形/等间隔机械眨眼/硬侧光/在咬字或歌词中途切镜]
 
 英文版：
 <Picture 1>: digital human character reference — preserve face/hair/costume/avatar look, unchanged throughout.
-[opt] <Audio 1>: voice reference — match its timbre/pace, or use directly as voiceover.
-Digital human in locked-off frontal MCU at eye level, facing camera, natural talking-head delivery: "[script verbatim]".
-Subtle nod/random blink/hand gesture; ultra-slow push-in ≤15%. 5600K frontal butterfly softlight, -1.5 stop side fill, 1.3:1 ratio, no hard or raking light.
-PRESERVE: [stable avatar/costume, lip-sync <80ms, irregular blink]  AVOID: [identity drift/mismatch/facial morph/robotic blink]
+[opt] <Audio 1>: voice/music reference — match its timbre/pace or song beat & enunciation; or use directly as voiceover.
+[opt] <Picture 2>/<Video 1>: background/scene reference — studio/stage/livestream/virtual set.
+Digital human faces camera with semantically motivated body movement (hand gestures, lean-in to emphasize, turn to point, small steps, pick up a prop; for singing/MV add sway, beat-tapping, light choreography). Same avatar & costume locked across all shots.
+Camera need not hold one take — cut on spoken pauses/breaths or on song phrase-breaths/downbeats, varying angle & size (frontal MCU → 15–45° side → over-shoulder → low-angle → hand/instrument ECU insert); subject stays the same digital human every cut, transitions hidden by inserts or size jumps, never cut mid-word or mid-lyric.
+Soft frontal butterfly key ~5600K, -1.5 stop side fill, 1.3:1; avoid hard/raking light that reveals mesh facets.
+Talking-head ASL 3–6s with cuts on semantic pauses; singing cuts on phrase-breaths/beats. Lip-sync <80ms, irregular blink every 3–5s, one non-semantic micro-movement per 10s.
+PRESERVE: [stable avatar/costume, lip-sync <80ms, irregular blink, same subject every cut]  AVOID: [identity drift/mismatch/facial morph/robotic blink/hard light/cut mid-word or mid-lyric]
 ```
 
 ## 运镜词汇表（英文术语，歧义更小）
