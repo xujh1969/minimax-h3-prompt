@@ -19,7 +19,7 @@ description: 把用户的简单故事情节/创意，转换为符合 MiniMax H3 
 
 1. **分层，不要糊成一整段**。官方公式：完整提示词 = 参考素材说明 + 核心创意 + 分段过程描写。绝大多数失败来自不分层的文字。
 2. **六要素**嵌进核心创意句：主体 + 动作 + 环境 + 镜头 + 光线/风格 + 限制。动作必须按时间顺序写。
-3. **每个参考素材都要有声明角色**。模型按上传顺序编号 `@image1 / @video2 / @audio3`，正文就地引用；没写用途的文件会被无视。
+3. **每个参考素材都要声明角色+用途，且只用顺序 token、绝不写文件路径**。素材由用户上传，平台按上传顺序自动映射为 `@image 1 / @video 1 / @audio 1` 等固定英文 token（也可写作 `@image 1`，以平台约定为准）；素材说明与正文一律引用该 token，**不写本地/网络路径**；token 在中文版与英文版提示词中保持不变（不翻译）。每个 token 后必须接"`——作用说明`"。未声明用途的素材会被模型无视。
 4. **中英文都吃**。本技能默认输出**中英双语版**（中文叙述 + 英文运镜术语；英文镜头词歧义更小）。
 5. **一次只改一个变量**迭代。
 
@@ -48,9 +48,9 @@ description: 把用户的简单故事情节/创意，转换为符合 MiniMax H3 
 确定模式后处理素材：
 
 - **内联图片（用户粘贴/上传、Agent 已可见）**：若当前运行时具备视觉读图能力（如 WorkBuddy/Trae/Codex/Claude Code 配视觉模型），**主动读图**，提取人物/物体/场景特征（性别、年龄、发型、服饰、体型、表情、标志性配饰、材质、颜色、构图），写入"参考素材说明"的对应角色行与核心创意的主体描写，再让用户确认或修正。这是本技能相比纯文本接口的最大优势。
-- **无视觉读图能力时（纯文本运行时）**：明确告知"我暂时看不到这张图"，改为请用户用文字描述人物/物体特征，或提供 `@image1` 路径并自填说明。**绝不编造图中内容**。
+- **无视觉读图能力时（纯文本运行时）**：明确告知"我暂时看不到这张图"，请用户用文字描述人物/物体特征（仍按 `@image 1` 等顺序 token 写素材说明，由用户自行对应上传顺序）。**绝不编造图中内容，也不要让用户填路径**。
 - **视频素材**：H3 不能直接"看懂整段视频"。引导用户截取关键帧（首帧/动作帧/尾帧）作为图片上传，或用文字描述运动。
-- **编号与引用**：按上传顺序编号 `@image1/@image2/@video1/@audio1`，在正文就地引用。
+- **编号与引用**：按用户上传顺序用 `@image 1 / @video 1 / @audio 1` 顺序 token（也可写作 `@image 1`，依平台），在素材说明与正文就地引用；**写 token，不写路径**。
 - **只列实际文件**：参考素材说明块只写用户实际提供的文件，不强制要视频/音频；缺哪类就不写哪类行。
 - **文件上限**：最多 9 张图 / 3 段视频 / 3 条音频；视频与音频各自总时长 ≤ 15s。
 
@@ -137,10 +137,11 @@ C · 极简高级向  —— 一句话画面 ｜ ASL / 光色 / 关键手法
 统一三段式骨架，按模式切换细节：
 
 ```
-[参考素材说明]      ← 仅 ②③④⑤ 模式；① 文生省略此块
-@image1：[角色类别——需保留的具体特征]
-@video1：[角色类别——需提取的元素]
-@audio1：[角色类别——需匹配的内容]
+[参考素材说明]      ← 仅 ②③④⑤ 模式；① 文生省略此块。只写顺序 token + 作用，绝不写路径
+@image 1：<角色类别——需保留/提取/匹配的具体特征>
+@video 1：<角色类别——需提取/匹配的具体特征>
+@audio 1：<角色类别——需匹配/复用的具体内容>
+（token 固定英文、不随中英文变化；缺哪类就不写哪行；类别名见下方角色词典，作用写具体）
 
 [核心创意]          ← 一句话嵌六要素：主体/动作/环境/镜头/光线风格/限制
 [主体] 在 [场景] 中 [动作]，以 [运镜] 拍摄，[光线/氛围]。
@@ -213,19 +214,19 @@ non_diegetic_music（非叙事音乐）：[风格/情绪，或 N/A]
 
 ## 参考素材角色词典（12 类，只标注用到的）
 
-| 角色类别 | 用途 | 推荐写法 |
+| 角色类别 | 用途 | 推荐写法（顺序 token + ——作用，不写路径） |
 |---|---|---|
-| 角色参考 character | 锁定一张脸/形象 | @image1 是角色参考（锁定这位女性的脸、发型、身材比例） |
-| 物体参考 object | 锁定产品/道具 | @image2 是物体参考（锁住香水瓶、含标签） |
-| 场景参考 scene | 锁定地点 | @image3 是场景参考（保留阴天石板巷） |
-| 关键帧 keyframe | 锁定一帧 | @image1 是首帧；@image2 是尾帧 |
-| 声音参考 sound | 锁定音色 | @audio1 是声音参考（古琴古典配乐） |
-| 动作参考 action | 从视频锁动作 | @video1 是动作参考（使用其中的剑舞动作） |
-| 运镜参考 camera | 锁镜头运动 | @video1 是运镜参考（跟它的推镜节奏） |
-| 风格参考 style | 匹配观感 | @image1 是风格参考（保留平涂色板与粗墨线） |
-| 构图参考 composition | 匹配取景 | @image1 是构图参考（匹配取景与版面） |
-| 音频复用 audio reuse | 音轨直接用 | @audio1 是音频复用（把这条音轨直接用作视频声音） |
-| 视频编辑 video edit | 待修改视频 | @video1 是源视频（保留其人物/运镜，仅改背景） |
+| 角色参考 character | 锁定一张脸/形象 | @image 1：角色参考——锁定这位女性的脸、发型、身材比例 |
+| 物体参考 object | 锁定产品/道具 | @image 2：物体参考——锁住香水瓶、含标签 |
+| 场景参考 scene | 锁定地点 | @image 3：场景参考——保留阴天石板巷 |
+| 关键帧 keyframe | 锁定一帧 | @image 1：首帧——锁住开场姿态/构图；@image 2：尾帧——锁住结束姿态 |
+| 声音参考 sound | 锁定音色 | @audio 1：声音参考——古琴古典配乐音色 |
+| 动作参考 action | 从视频锁动作 | @video 1：动作参考——使用其中的剑舞动作 |
+| 运镜参考 camera | 锁镜头运动 | @video 1：运镜参考——跟它的推镜节奏 |
+| 风格参考 style | 匹配观感 | @image 1：风格参考——保留平涂色板与粗墨线 |
+| 构图参考 composition | 匹配取景 | @image 1：构图参考——匹配取景与版面 |
+| 音频复用 audio reuse | 音轨直接用 | @audio 1：音频复用——把这条音轨直接用作视频声音 |
+| 视频编辑 video edit | 待修改视频 | @video 1：源视频——保留其人物/运镜，仅改背景 |
 | 分镜稿 storyboard | 按故事板生成 | 分镜稿：按故事板画面生成镜头 |
 
 ## 五种模式字段模板
@@ -252,7 +253,7 @@ PRESERVE: […]  AVOID: […]
 ### ② 单图生视频（图作首帧）
 ```
 中文版：
-以 @image1 作为视频首帧，完整保留 [面部/服装/颜色/构图/光线]。
+以 @image 1 作为视频首帧，完整保留 [面部/服装/颜色/构图/光线]。
 [主体] 先做 [第一个小动作]，再连续完成 [主要动作]。
 镜头进行 [一种运镜]，同时 [背景或光线变化]。
 保持 [身份/服装/形状/布局/产品细节] 不变。
@@ -260,7 +261,7 @@ overall_soundscape：[…]；non_diegetic_music：[… 或 N/A]
 PRESERVE：[锁定图中特征]  AVOID：[面部变形/闪烁…]
 
 英文版：
-Use @image1 as the first frame; preserve [face/costume/color/composition/lighting].
+Use @image 1 as the first frame; preserve [face/costume/color/composition/lighting].
 [Subject] does [small action], then [main action]. Camera [one move] while [bg/light change].
 Keep [identity/costume/shape/layout/product details].
 overall_soundscape: […]; non_diegetic_music: [… or N/A]
@@ -270,17 +271,17 @@ PRESERVE: […]  AVOID: […]
 ### ③ 首尾帧（图1首/图2尾）
 ```
 中文版：
-@image1 作为 0 秒首帧，@image2 作为 [时长] 秒尾帧。
-使用一个连续镜头完成变化：开始时 [图1 的姿势/服装/构图/光线]；
-[中间逐步发生的动作路径]；最终准确落在 @image2 的 [姿势/状态/构图/光线]。
+@image 1 作为 0 秒首帧，@image 2 作为 [时长] 秒尾帧。
+使用一个连续镜头完成变化：开始时 [@image 1 的姿势/服装/构图/光线]；
+[中间逐步发生的动作路径]；最终准确落在 @image 2 的 [姿势/状态/构图/光线]。
 镜头 [一种运镜]。
 全程 [环境声/音效]，non_diegetic_music：[… 或 N/A]
 PRESERVE：[图1图2 间应稳定的元素]  AVOID：[跳变/闪烁…]
 
 英文版：
-@image1 aligns with 0.00s; @image2 aligns with [X]s.
-One continuous shot: begin in @image1's [pose/costume/composition/lighting];
-[gradual mid-path actions]; end exactly on @image2's [pose/state/composition/light].
+@image 1 aligns with 0.00s; @image 2 aligns with [X]s.
+One continuous shot: begin in @image 1's [pose/costume/composition/lighting];
+[gradual mid-path actions]; end exactly on @image 2's [pose/state/composition/light].
 Camera [one move]. overall_soundscape: […]; non_diegetic_music: [… or N/A]
 PRESERVE: […]  AVOID: […]
 ```
@@ -290,14 +291,14 @@ PRESERVE: […]  AVOID: […]
 ```
 中文版：
 [参考素材说明]
-@image1：[角色参考——锁定人脸/发型/身材]
-@image2：[物体参考——锁住颜色/扣件/材质]
-@video1：[运镜参考——跟它的推镜节奏]
-@audio1：[音频复用——把这条音轨直接用作声音]
+@image 1：角色参考——锁定人脸/发型/身材
+@image 2：物体参考——锁住颜色/扣件/材质
+@video 1：运镜参考——跟它的推镜节奏
+@audio 1：音频复用——把这条音轨直接用作声音
 
 [核心创意] [主体] 在 [场景] 中 [动作]，[运镜风格]，[光线/氛围]。
 [分段过程] （多动作才分段）
-0–Xs：[景别]。[动作]。[运镜]。[声音，引用 @audio1 节奏]。
+0–Xs：[景别]。[动作]。[运镜]。[声音，引用 @audio 1 节奏]。
 X–Ys：[景别]。[动作]。[运镜]。
 PRESERVE：[每条点名要保留的特征]  AVOID：[…]
 ```
@@ -305,17 +306,17 @@ PRESERVE：[每条点名要保留的特征]  AVOID：[…]
 ### ⑤ 视频编辑（对已有视频替换）
 ```
 中文版：
-@video1 是源视频（保留其 [人物外观/表演/运镜/时序]，仅改 [目标]）。
-@image1 是 [新背景/新物体——保留其具体特征]。
-把 @video1 中的 [旧物体] 替换为 [新物体/新背景]，重打光使 [主光方向] 匹配新背景。
+@video 1 是源视频（保留其 [人物外观/表演/运镜/时序]，仅改 [目标]）。
+@image 1 是 [新背景/新物体——保留其具体特征]。
+把 @video 1 中的 [旧物体] 替换为 [新物体/新背景]，重打光使 [主光方向] 匹配新背景。
 [分段过程描写替换后的运动]
 overall_soundscape：[…]；non_diegetic_music：[… 或 N/A]
 PRESERVE：[源视频需原样保留的部分]  AVOID：[穿帮/光线错位…]
 
 英文版：
-@video1 is the source clip (preserve its [appearance/performance/camera/timing]; only [target] changes).
-@image1 is the [new background/object — preserve its specifics].
-Replace [old] in @video1 with [new], relight to match [key light direction].
+@video 1 is the source clip (preserve its [appearance/performance/camera/timing]; only [target] changes).
+@image 1 is the [new background/object — preserve its specifics].
+Replace [old] in @video 1 with [new], relight to match [key light direction].
 [process…]
 overall_soundscape: […]; non_diegetic_music: [… or N/A]
 PRESERVE: […]  AVOID: […]
@@ -348,7 +349,7 @@ PRESERVE: […]  AVOID: […]
 | 运镜随机 | 短镜头塞多种移动 | 保留一种与揭示相关的运镜 |
 | 结尾中断 | 有动作没结束态 | 加明确姿态/位置/构图 |
 | 首尾帧跳变 | 只重复两静图 | 写清两帧间逐步变化 |
-| 参考素材混合 | 文件无明确职责 | 点名每个编号素材用途 |
+| 参考素材混合 | 用路径代替 token / 无明确职责 | 只用 @image 1 等顺序 token（不写路径），点名每个素材用途 |
 | 对白被改写 | 对白混在长描述里 | 原句单独放入简短说话指令 |
 | 否定无效 | 自然语言否定非硬控制 | 改正向状态并删冲突要求 |
 
