@@ -3,7 +3,7 @@
 > **这是速查，不是手册。** 本文件是 `long-tail-genres.md` 拆分后的主题子集，覆盖核心题材之外的长尾，保证"查不空"。
 > 每个题材只给最关键的 4 项：**母题动词 / 核心镜头 / 光色节奏 / 头号翻车点**。够你直接写出一条能用的提示词。
 > **需要深入时**：参数当起点展开，或翻最接近的核心题材文件 —— `action-wuxia` / `food` / `product` / `emotional-family` / `scifi` / `horror-thriller` / `fashion-beauty` / `automotive` / `landscape` / `documentary` / `crime-thriller` / `war-military` / `tech-corporate`。
-> **参数有区分度，不要互相抄**：婚礼 4300K 和雨夜 3000K+7000K 混光是两种世界观；体育 ASL 0.6s 和水下 ASL 3.5s 中间隔着六倍。
+> **参数有区分度，不要互相抄**：婚礼 4300K 和雨夜 3000K+7000K 混光是两种世界观；田径 ASL 0.6s 和水下 ASL 3.5s 中间隔着六倍。
 
 ---
 

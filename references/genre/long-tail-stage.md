@@ -3,21 +3,15 @@
 > **这是速查，不是手册。** 本文件是 `long-tail-genres.md` 拆分后的主题子集，覆盖核心题材之外的长尾，保证"查不空"。
 > 每个题材只给最关键的 4 项：**母题动词 / 核心镜头 / 光色节奏 / 头号翻车点**。够你直接写出一条能用的提示词。
 > **需要深入时**：参数当起点展开，或翻最接近的核心题材文件 —— `action-wuxia` / `food` / `product` / `emotional-family` / `scifi` / `horror-thriller` / `fashion-beauty` / `automotive` / `landscape` / `documentary` / `crime-thriller` / `war-military` / `tech-corporate`。
-> **参数有区分度，不要互相抄**：婚礼 4300K 和雨夜 3000K+7000K 混光是两种世界观；体育 ASL 0.6s 和水下 ASL 3.5s 中间隔着六倍。
+> **参数有区分度，不要互相抄**：婚礼 4300K 和雨夜 3000K+7000K 混光是两种世界观；田径 ASL 0.6s 和水下 ASL 3.5s 中间隔着六倍。
 
 ---
 
 
 
 ### 体育竞技 Sports & Athletics
-- **母题动词**：爆发 Explode、腾空 Airborne、撞击 Impact、冲线 Surge、落地 Land
-- **核心镜头 ①**：MS 侧向横移跟拍（lateral tracking），与运动员同速，背景拉成横向流线
-- **核心镜头 ②**：ECU 肌肉/汗珠/鞋钉入地，240fps 升格，只给 0.4s 实时长度
-- **核心镜头 ③**：Low-angle WS 仰拍腾空，镜头快速上摇（whip tilt up），把人衬到天空/顶棚上
-- **光色**：硬光直打制造清晰边缘与汗光；场馆灯 **5600K**，看台环境 6500K 偏冷，允许两者不统一（真实场馆本来就混光）
-- **节奏**：**ASL 0.6–1.0s**，10s 内 **≤11 镜**。全片最快的题材之一；升格镜必须夹在快切中间才有对比，连续升格＝广告片而非比赛
-- **头号翻车点**：① 全程升格，力量感消失变成"运动品牌形象片"；② 缺"落地/触地"的实拍音画同步点，动作没有重量
-- **英文锚点**：`explosive athletic sprint, low-angle wide shot, lateral tracking at matching speed, hard 5600K arena key light, sharp sweat highlights, 240fps burst on impact frame, rapid cutting`
+> ⚠️ **体育已独立成专类文件 `genre/sports.md`**（球类/田径/速度/技巧/第一视角/赛事转播全套语法与硬约束）。本子集**不再覆盖体育**，请直接查 `genre/sports.md`。历史锚点句保留如下：
+> `explosive athletic sprint, low-angle wide shot, lateral tracking at matching speed, hard 5600K arena key light, sharp sweat highlights, 240fps burst on impact frame, rapid cutting`
 
 
 ### 舞蹈 / MV Dance & Music Video
