@@ -1,6 +1,7 @@
 ---
 name: minimax-h3-prompt
 description: 把用户的简单故事情节/创意，转换为符合 MiniMax H3 规范的视频生成提示词（中英双语）。覆盖 6 种模式：文生视频、单图生视频、首尾帧、多图参考（全能参考）、视频编辑、数字人/虚拟人口播。运行时先确认模式，为参考素材逐一分配角色，嵌入统一音频块与 PRESERVE/AVOID 约束，生成前用官方检查清单自检，产出「中英双语提示词 + 简短中文说明 + 一次只改一个变量迭代指引」。内置四层影像参考库 + 两维正交叠加：L1 题材镜头语法（14 个专类 + 长尾 5 主题子集共 52 子类，含母题动词/ASL/光位色温/光比/升降格/声音/翻车点）、L2 商业广告 8 种叙事结构范式（与题材正交叠乘）、L3 导演风格锚点库（western/asian 导演 + dp 摄影指导，已拆分三份）、L4 介质语法（手机自拍/监控DV/运动相机）；两维正交为视觉风格 visual-style（16 画风，含日式赛璐璐/吉卜力与美式 TV 卡通/迪士尼等动漫根）与年代 era-period（12 时代）。写作前按「题材→结构→风格」顺序加载，介质/画风/年代在确定题材后叠加；默认先给 A/B/C 三条风格路线供选择。当用户用自然语言说"帮我生成海螺/H3 视频提示词""把这个故事写成 MiniMax 提示词"或调用 /minimax-h3 时触发。
+compatibility: Portable to any agent that can read local files — no external API calls, MiniMax Hub tools, or proprietary runtime required. This skill mirrors the official h3-prompt-writing skill's portability: the genre/structure/style libraries and the [Shot n] / <d> conventions are pure local markdown consumed by the agent during composition, not by H3 at inference. The final prompt fields (integrated_multimodal_description / overall_soundscape / non_diegetic_music) follow the official H3 convention so generated prompts parse correctly.
 ---
 
 # MiniMax H3 视频提示词生成器
@@ -56,6 +57,19 @@ description: 把用户的简单故事情节/创意，转换为符合 MiniMax H3 
 - 多句台词分属不同镜头时，**各自放在所属 `[Shot n]` 段落内**，不要把整段台词堆在开头。同一镜头内多句可写多个 `<d>` 块。
 - 台词只包一次，**不要在 `[PRESERVE]` 里重复整句**；`PRESERVE` 只写"口型与 `<d>` 内台词严格对齐"这类约束。
 - 若用户脚本里**混用中英**（如中文对话夹一句英文），按**每句台词各自的语言**分别打标签。
+
+### 说话人稳定 ID（多说话人必做 · 官方约定）
+
+当视频有 ≥2 个会发声的角色（对白、合唱、群声、画外音），给每个发声源分配**全局稳定 ID** `(S1)` `(S2)`，多人同说用复合 `(S1,S2)`。规则（与官方 `h3-prompt-writing` 一致）：
+
+- **首次出现**时在视觉/音频语境里给足身份锚点（角色类型、年龄、性别、是否在画内、音高、音色、语速、口音），把"说话人识别语 + ID + 动作"写在 `<d>` **外面**，`<d>` 内只放语言标签与原台词：
+  - 中文：`[Shot 2] CU。扎马尾的年轻女孩（S1）笑着说 <d>[Chinese] 我今天太高兴了</d>，视线落向画外左侧。`
+  - 英文：`[Shot 2] CU. The young girl with a ponytail (S1) says with a light, breathy voice, <d>[Chinese] 我今天太高兴了</d>, gaze off-frame left.`
+- **ID 跨镜不变**：同一发声源在后续每个镜都复用同一个 `(Sx)`；**从不发声的角色不分配** ID。
+- **参考主体同时发声**：当说话人正是参考素材锁定的主体，写 `<Subject N> (Sx)`（见步骤 4 多图/数字人模板）。
+- **画外音（voiceover）**：用 `says in an off-screen voiceover`，并在 `<d>` 后立刻声明画内角色嘴唇保持闭合：
+  - 英文：`(S1) says in an off-screen voiceover: <d>[Chinese] 我仍记得那条路</d> while his lips remain completely closed.`
+- **台词跨镜延续 / 被截断**：同一句台词跨切点时，在两端连接处各写 `<scenetrans>` 并声明"音频跨镜连续"（continues seamlessly across the cut / carries over from the previous shot）；台词在片尾被截断时用 `<cutoff>`。
 
 ## 工作流（严格按顺序）
 
@@ -129,7 +143,7 @@ description: 把用户的简单故事情节/创意，转换为符合 MiniMax H3 
 
 **为什么必须先读题材文件**：题材文件给的是**具体可执行参数**（ASL 秒数、开尔文色温、光比、fps、光位名、禁用运镜）与**母题动词**。跳过它写出来的提示词必然是"电影感/高级感"这类模型无法执行的空话。
 
-**参数必须"以效果织入"而非"以文字列出"**：读到的具体参数（色温开尔文、光比、ASL、禁用运镜、母题动词）必须落到提示词的对应字段里——色温/光比写进 `[分段过程]` 的光线描写与 `[PRESERVE]`；禁用运镜写进 `[AVOID]`；母题动词写进 `[核心创意]` 与 `[分段过程]` 的动作。这样参考文件既"起作用"又"不污染可复制提示词"（见步骤 6 纯净化规则）。
+**参数必须"以效果织入"而非"以文字列出"**：读到的具体参数（色温开尔文、光比、ASL、禁用运镜、母题动词）必须落到提示词的对应字段里——色温/光比写进 `integrated_multimodal_description:` 的光线描写与 `[PRESERVE]`；禁用运镜写进 `[AVOID]`；母题动词写进 `integrated_multimodal_description:` 的主体与 `[Shot n]` 动作。这样参考文件既"起作用"又"不污染可复制提示词"（见步骤 6 纯净化规则）。
 
 ### 步骤 3.5 · A/B/C 三方案（默认执行 · 灵感点火）
 
@@ -186,7 +200,7 @@ C · 极简高级向  —— 一句话画面 ｜ ASL / 光色 / 关键手法
 
 ### 步骤 4 · 套骨架生成（中英双语）
 
-统一三段式骨架，按模式切换细节：
+统一三段式骨架，按模式切换细节。下方为**可复制代码块**结构（中文版与英文版结构完全一致，仅叙述语言不同）：
 
 ```
 [参考素材说明]      ← 仅 ②③④⑤⑥ 模式；① 文生省略此块。只写顺序 token + 作用，绝不写路径
@@ -195,25 +209,21 @@ C · 极简高级向  —— 一句话画面 ｜ ASL / 光色 / 关键手法
 <Audio 1>：<角色类别——需匹配/复用的具体内容>
 （token 固定英文、不随中英文变化；缺哪类就不写哪行；类别名见下方角色词典，作用写具体）
 
+integrated_multimodal_description:   ← 官方主字段名（中英双语都用这个英文标签）
 [时长/画幅]         ← 必写首字段！值为步骤 3 已确认的时长+画幅（如 10s / 16:9），不得留空或省略
-[核心创意]          ← 一句话嵌六要素：主体/动作/环境/镜头/光线风格/限制
-[主体] 在 [场景] 中 [动作]，以 [运镜] 拍摄，[光线/氛围]。
+[主体外貌] 位于 [环境]，[动作]，[运镜]，[光线/氛围]。（首句建议带风格标签：Live-action, cinematic / 2D-animated / 3D CG…）
+[Shot 1] [景别]。[动作]。[运镜]。[声音]。（第 1 镜不带时间戳，直接写动作；说话人加 (S1) 稳定 ID）
+[Shot 2] At 00:03.500, the camera cuts to [景别]。[(S1) 动作，含"她说"] <d>[Chinese] 台词原句</d>。[运镜]。[声音]。（第 2 镜起用绝对时间戳 At MM:SS.mmm + 官方切镜动词；台词用 <d> 包装）
+（每个分镜必带 [Shot n]，铁律 A；台词必用 <d>[语言]…</d> 包装，铁律 B；多说话人用 (S1)(S2) 复合 (S1,S2)）
 
-[分段过程]          ← 每个分镜必须以 [Shot n] 开头（铁律 A）；时间戳默认不带，仅多动作节点才分段
-（单动作）[Shot 1] [景别]。[动作]。[运镜]。[声音]。
-（多动作）[Shot 1] 0–Xs：[景别]。[动作]。[运镜]。[声音]。
-         [Shot 2] X–Ys：[景别]。[动作]。[运镜]。[声音]。
-（有台词）[Shot 2] X–Ys：[景别]。[动作，含"她说"]  <d>[Chinese] 台词原句</d>。[运镜]。[声音]。
-         ← 台词必须用 <d>[语言] …</d> 包装（铁律 B），中英文版逐字相同、不翻译
+overall_soundscape: [具体声音，或 N/A]
+non_diegetic_music: [风格/情绪，或 N/A]
 
-[声音设计]
-overall_soundscape（环境声）：[具体声音，或 N/A]
-non_diegetic_music（非叙事音乐）：[风格/情绪，或 N/A]
-（可选）立体声定位：[如"引擎声从左向右平移"，不强制]
-
-[PRESERVE]  需要保持不变的：身份/颜色/构图/产品细节……
-[AVOID]     需要规避的：面部变形/闪烁/跳变/多余手指/相邻镜头主体或事件无铺垫跳变……
+PRESERVE: [需保持不变的：身份/颜色/构图/产品细节……]
+AVOID: [需规避的：面部变形/闪烁/跳变/多余手指/相邻镜头主体或事件无铺垫跳变……]
 ```
+
+> **字段名约定（与官方 `h3-prompt-writing` 完全一致）**：主体描述与分镜统一放在 `integrated_multimodal_description:` 之下；`overall_soundscape` / `non_diegetic_music` / `PRESERVE` / `AVOID` 都是**英文标签**，中英两版都用同一标签（标签不翻译）。**不要再**用 `[核心创意]` / `[分段过程]` / `[声音设计]` 这类中文标签包住正文——它们不在官方字段表里，H3 无法识别，会拖累解析。风格标签建议写英文（`Live-action, cinematic` / `2D-animated` / `claymation` / `vintage film`…），与官方示例一致；中文版也可写中文风格词。
 
 **通用规则：**
 - **文生视频（①）省略「参考素材说明」块**，视觉描写写得更细（至少覆盖：主体外貌 + 场景 + 动作 + 风格）。
@@ -222,18 +232,18 @@ non_diegetic_music（非叙事音乐）：[风格/情绪，或 N/A]
 - **分镜编号（铁律 A · 见上文「格式铁律」）**：每个分镜前必须写 `[Shot n]`，中英文版格式一致（都写 `[Shot 1]`），与时间戳共存时 `[Shot n]` 在前、时间戳紧随。单镜也写 `[Shot 1]`。
 - **对白（铁律 B · 见上文「格式铁律」）**：台词本体必须用 `<d>[语言] 台词</d>` 包装，语言标签取决于**用户脚本里台词的原语言**（中文台词 → `[Chinese]`，英文台词 → `[English]`），**中文版与英文版插入的 `<d>` 块逐字相同、绝不翻译**；"她说 / She says" 等说话动作写在 `<d>` 外。示例：`[Shot 2] CU 特写。她笑着说 <d>[Chinese] 我今天太高兴了</d>。` / `[Shot 2] CU. She smiles and says <d>[Chinese] 我今天太高兴了</d>.`
 - **PRESERVE / AVOID：所有模式默认带**（① 文生可写"无特殊约束"）。参考/首尾帧/数字人模式强制锁身份。
-- **时间戳分段**：默认不带；仅当视频含多个动作节点时才分段（0–3s / 3–7s…）。
+- **时间戳分段（官方格式）**：`[Shot 1]` 不带时间戳；**第 2 镜起用绝对时间戳 `At MM:SS.mmm`**（如 `At 00:03.500`），并紧跟官方切镜动词（`the camera cuts to` / `the shot cuts to` / `the shot transitions to` / `the shot switches to`；用户明确要求时可用 cross-dissolve / fade / wipe）。中文版可用对应中文动词（"镜头切到"/"镜头转向"/"镜头过渡为"）。切镜必须引入新信息（主体/空间/状态/视角/时间之一）。仅改距离或轻微角度时优先用运镜而非切镜。
   **动作场景例外**：打斗/追逐必须分段，且时间戳**精确到 0.1s**、**镜头时长长短交错**（禁止等分），并为每镜写全「景别 + 单一动作 + 单一运镜 + 切换方式/速度标记」四件套（详见 `references/genre/action-wuxia.md`）。——**动作戏默认详细逐镜头分镜，不向用户询问粒度选择**（详见该文件「提示词粒度」一节）。
 - **运镜**：一个镜头/节拍只用一种主要运镜，把运动写成具体可见动作 + 方向 + 幅度/速度，并与画面揭示绑定，不要用空泛质量词。多镜头快切时，此规则按**单镜**执行——每镜一种运镜，镜头之间可以不同。
-- **画面内文字**：要出现在画面里的文字，原样加引号写（如屏幕显示"AI 视频创作"）。
-- **镜头连贯性 / 因果链（多镜必做 · 高频翻车点）**：一旦写分段过程（≥2 镜），相邻镜头 Shot N → Shot N+1 必须构成连续的因果链，**禁止"断点跳转"**。逐对校验三条：
+- **画面内文字（on-screen text）**：实际出现在画面里的横幅/招牌/字幕/霓虹字，用**英文双引号**原样保留、不翻译（如 `a red neon sign reading "营业中"`）。只包可见文字本身，描述文字性质与位置放在引号外。
+- **镜头连贯性 / 因果链（多镜必做 · 高频翻车点）**：一旦 `integrated_multimodal_description` 内写了 ≥2 个分镜，相邻镜头 Shot N → Shot N+1 必须构成连续的因果链，**禁止"断点跳转"**。逐对校验三条：
   - **主体连续**：Shot N+1 的主体必须是 Shot N 已出现/已建立的主体，或 Shot N 画面中已可见/提及的次要主体。**禁止凭空冒出全新主体**（新物体/新角色/新场景元素）。若必须引入（如撞向某建筑），须让 Shot N 先以空镜/摇镜/台词铺垫它的存在与方位。
   - **动作因果**：Shot N+1 的动作必须是 Shot N 动作的**直接结果或自然延续**，不能无故中断、替换为另一条无关事件线（上一条动作线必须被交代去向）。
   - **时空连续**：镜头间空间关系、时间流向默认连贯，除非有显式转场（空镜、切场景、字幕、时间跳）。
   - 写之前先在草稿排一条**事件因果链**（用箭头连），每出现一个新元素就标它在哪一镜被"建立"。
   - **反面教材（必须杜绝）**：上一镜"汽车追近摩托、前保险杠贴上摩托后轮开始撞击" → 下一镜"汽车撞到了亭子"。错在两点——① 亭子是凭空冒出的物体（上一镜从未建立它的存在与位置）；② "撞击摩托"这条动作线被无交代地吞掉、替换为撞亭子。正确写法：上一镜"前保险杠贴上摩托后轮、撞击发生" → 下一镜"摩托急扭把闪避、汽车擦过失控，撞向路边**已在画面一侧出现过的**报刊亭"，或"汽车撞击后 rebound 方向偏移、追尾前方卡车"。
 
-**产出两份**：一份**中文版**（中文叙述），一份**英文版**（英文叙述 + 英文运镜术语，使用 `integrated_multimodal_description` / `overall_soundscape` / `non_diegetic_music` 字段风格）。两份结构一致。
+**产出两份**：一份**中文版**（中文叙述，供你阅读核对），一份**英文版**（英文叙述 + 英文运镜术语 + 英文风格标签）。**两份结构完全一致**，都使用官方字段名 `integrated_multimodal_description:` / `overall_soundscape:` / `non_diegetic_music:` / `PRESERVE:` / `AVOID:`。**提交给 MiniMax H3 的正式版本是英文版**——官方规范明写"提示词正文用英语书写、台词/歌词/画面文字保留原始语言"，英语正文在 H3 上的解析与表现更稳定；中文版用于你确认人物、动作、台词是否写对。若只给中文版，表现可能不及英文版。
 
 ### 步骤 5 · 生成前自检（官方检查清单，逐条过）
 
@@ -250,9 +260,10 @@ non_diegetic_music（非叙事音乐）：[风格/情绪，或 N/A]
 9. 全文无互相冲突的要求（尤其音乐开关、运镜静止 vs 运动）。
 10. 计划"看到结果后一次只改一个变量"。
 
-**格式铁律追加 2 条（所有模式 · 不满足禁止交付）**：
-- ⓐ **每个分镜是否都以 `[Shot n]` 开头**、序号从 1 连续递增无跳号，**且中文版与英文版都写了、格式一致**（都是 `[Shot 1]` 而非"镜头 1"/`Shot One`）？单镜是否也写了 `[Shot 1]`？`[Shot n]` 是否在时间戳之前？
-- ⓑ **所有台词是否都用 `<d>[语言] 台词</d>` 包装**、语言标签是否与**用户脚本里台词的原语言**一致？**中英两版的 `<d>` 块是否逐字相同、没有被翻译**？是否只包了台词本体（"她说/She says"留在外面）、没有残留引号写法、没有在 PRESERVE 里重复整句台词？
+**格式铁律追加 3 条（所有模式 · 不满足禁止交付）**：
+- ⓐ **每个分镜是否都以 `[Shot n]` 开头**、序号从 1 连续递增无跳号，**且中文版与英文版都写了、格式一致**（都是 `[Shot 1]` 而非"镜头 1"/`Shot One`）？单镜是否也写了 `[Shot 1]`？`[Shot n]` 是否在时间戳之前？第 2 镜起是否用了绝对时间戳 `At MM:SS.mmm`？
+- ⓑ **所有台词是否都用 `<d>[语言] 台词</d>` 包装**、语言标签是否与**用户脚本里台词的原语言**一致？**中英两版的 `<d>` 块是否逐字相同、没有被翻译**？是否只包了台词本体（"她说/She says"留在外面）、没有残留引号写法、没有在 PRESERVE 里重复整句台词？多说话人是否加了稳定 `(Sx)` ID？
+- ⓒ **是否用了官方主字段 `integrated_multimodal_description:` 包裹主体描写与全部分镜**（中英两版都用此英文标签，不写 `[核心创意]`/`[分段过程]` 这类中文标签）？`overall_soundscape:` / `non_diegetic_music:` 是否为**独立字段行**（不在正文里混写）？提交 H3 的版本是否为**英文版**？
 
 **镜头连贯性追加（所有多镜 / 分段场景）**：① 逐对检查相邻镜头——Shot N+1 的主体是否在 Shot N 已出现/已建立（无凭空冒出的新物体/新角色）？② Shot N+1 的动作是否承接 Shot N 的结果/状态，而非无故中断、替换为另一条事件线？③ 任一为否 → 重写 Shot N（铺垫新元素的存在与方位）或重写 Shot N+1（改为承接上一条线），**禁止"断点跳转"**。典型反例：上一镜"汽车撞击摩托" → 下一镜"汽车撞亭子"（亭子凭空出现、撞摩托的线被吞掉）。
 
@@ -298,68 +309,77 @@ non_diegetic_music（非叙事音乐）：[风格/情绪，或 N/A]
 ### ① 文生视频（省略参考块）
 ```
 中文版：
+integrated_multimodal_description:
 [时长/画幅], [风格]。
 [主体外貌] 位于 [环境]。
 [Shot 1] 先发生 [动作1]。镜头以 [速度] 进行 [一种运镜]。
-[Shot 2] 接着 [动作2]（若有台词：她说 <d>[Chinese] 台词原句</d>）。[运镜]。
+[Shot 2] At 00:0X.XXX, 镜头切到 [动作2]（若有台词：(S1) 她说 <d>[Chinese] 台词原句</d>）。[运镜]。
 [可见光线/氛围]。最后停在 [明确结束状态]。
-保持 [角色/物体/颜色/构图限制] 不变。
 overall_soundscape：[具体声音]；non_diegetic_music：[风格 或 N/A]
 PRESERVE：[…]  AVOID：[…]
 
 英文版：
+integrated_multimodal_description:
 [Duration/aspect], [style].
 [Subject] is in [environment].
 [Shot 1] [Action1]. Camera [one camera move] at [speed].
-[Shot 2] [Action2] (with dialogue: she says <d>[Chinese] 台词原句</d> — same <d> block as the Chinese version, never translated). [camera move].
-[Visible light/mood]. End on [clear end state]. Keep [constraints].
+[Shot 2] At 00:0X.XXX, the camera cuts to [Action2] (with dialogue: (S1) she says <d>[Chinese] 台词原句</d> — same <d> block as the Chinese version, never translated). [camera move].
+[Visible light/mood]. End on [clear end state].
 overall_soundscape: […]; non_diegetic_music: [… or N/A]
 PRESERVE: […]  AVOID: […]
 ```
 
-### ② 单图生视频（图作首帧）
+### ② 单图生视频（图作首帧 · I2VA）
 ```
 中文版：
+For the target video, at 0.00 seconds into the target video, <Picture 1> (from [Shot 1]) is fully referenced.
+
+integrated_multimodal_description:
 [时长/画幅]
-以 <Picture 1> 作为视频首帧，完整保留 [面部/服装/颜色/构图/光线]。
-[Shot 1] [主体] 先做 [第一个小动作]，再连续完成 [主要动作]（若有台词：她说 <d>[Chinese] 台词原句</d>）。镜头进行 [一种运镜]，同时 [背景或光线变化]。
-保持 [身份/服装/形状/布局/产品细节] 不变。
+[Shot 1] [主体] 先做 [第一个小动作]，再连续完成 [主要动作]（若有台词：(S1) 她说 <d>[Chinese] 台词原句</d>）。镜头进行 [一种运镜]，同时 [背景或光线变化]。
+[可选结尾状态]。
 overall_soundscape：[…]；non_diegetic_music：[… 或 N/A]
 PRESERVE：[锁定图中特征]  AVOID：[面部变形/闪烁…]
 
 英文版：
+For the target video, at 0.00 seconds into the target video, <Picture 1> (from [Shot 1]) is fully referenced.
+
+integrated_multimodal_description:
 [Duration/aspect]
-Use <Picture 1> as the first frame; preserve [face/costume/color/composition/lighting].
-[Shot 1] [Subject] does [small action], then [main action] (with dialogue: she says <d>[Chinese] 台词原句</d> — identical <d> block, never translated). Camera [one move] while [bg/light change].
-Keep [identity/costume/shape/layout/product details].
+[Shot 1] [Subject] does [small action], then [main action] (with dialogue: (S1) she says <d>[Chinese] 台词原句</d> — identical <d> block, never translated). Camera [one move] while [bg/light change].
 overall_soundscape: […]; non_diegetic_music: [… or N/A]
 PRESERVE: […]  AVOID: […]
 ```
 
-### ③ 首尾帧（图1首/图2尾）
+### ③ 首尾帧（图1首/图2尾 · FL2VA）
 ```
 中文版：
+How the reference pictures align with the target video — <Picture 1> (from [Shot 1]) aligns with the 0.00-second mark of the target video; <Picture 2> (from [Shot N]) aligns with the [X.XX]-second mark of the target video.
+
+integrated_multimodal_description:
 [时长/画幅]
-<Picture 1> 作为 0 秒首帧，<Picture 2> 作为 [时长] 秒尾帧。
 [Shot 1] 使用一个连续镜头完成变化：开始时 [<Picture 1> 的姿势/服装/构图/光线]；
 [中间逐步发生的动作路径]；最终准确落在 <Picture 2> 的 [姿势/状态/构图/光线]。
 镜头 [一种运镜]。（一镜到底也必须写 [Shot 1]）
-全程 [环境声/音效]，non_diegetic_music：[… 或 N/A]
+overall_soundscape：[…]；non_diegetic_music：[… 或 N/A]
 PRESERVE：[图1图2 间应稳定的元素]  AVOID：[跳变/闪烁…]
 
 英文版：
+How the reference pictures align with the target video — <Picture 1> (from [Shot 1]) aligns with the 0.00-second mark; <Picture 2> (from [Shot N]) aligns with the [X.XX]-second mark.
+
+integrated_multimodal_description:
 [Duration/aspect]
-<Picture 1> aligns with 0.00s; <Picture 2> aligns with [X]s.
 [Shot 1] One continuous shot: begin in <Picture 1>'s [pose/costume/composition/lighting];
 [gradual mid-path actions]; end exactly on <Picture 2>'s [pose/state/composition/light].
 Camera [one move]. overall_soundscape: […]; non_diegetic_music: [… or N/A]
 PRESERVE: […]  AVOID: […]
 ```
-注意：首尾帧与 reference 素材不能混在同一请求；两帧差异不宜过大；中间必须有足够动作路径。
+注意：首尾帧与 reference 素材不能混在同一请求；两帧差异不宜过大；中间必须有足够动作路径。FL2VA 通常**偏好单一连续镜头**以便模型从首帧插值到尾帧，仅在用户明确要求多镜时才拆分。
 
-### ④ 多图参考（全能参考）
+### ④ 多图参考（全能参考 · Ref2VA 简化版）
 ```
 中文版：
+integrated_multimodal_description:
 [时长/画幅]
 [参考素材说明]
 <Picture 1>：角色参考——锁定人脸/发型/身材
@@ -367,36 +387,38 @@ PRESERVE: […]  AVOID: […]
 <Video 1>：运镜参考——跟它的推镜节奏
 <Audio 1>：音频复用——把这条音轨直接用作声音
 
-[核心创意] [主体] 在 [场景] 中 [动作]，[运镜风格]，[光线/氛围]。
-[分段过程] （多动作才分段；每镜必带 [Shot n]）
-[Shot 1] 0–Xs：[景别]。[动作]。[运镜]。[声音，引用 <Audio 1> 节奏]。
-[Shot 2] X–Ys：[景别]。[动作（有台词时： <d>[Chinese] 台词原句</d>）]。[运镜]。
+[主体] 在 [场景] 中 [动作]，[运镜风格]，[光线/氛围]。
+[Shot 1] [景别]。[动作]。[运镜]。[声音，引用 <Audio 1> 节奏]。
+[Shot 2] At 00:0X.XXX, 镜头切到 [景别]。[动作（有台词时：(S1) 她说 <d>[Chinese] 台词原句</d>）]。[运镜]。
 PRESERVE：[每条点名要保留的特征]  AVOID：[…]
 ```
+（进阶：若需严格锁定多个参考主体及其保留/迁移关系，改用官方 Ref2VA 六段式——`subject_definitions` / `summary` / `retention_analysis` / `detailed_description` / `overall_soundscape` / `non_diegetic_music`，标签用 `<Subject N>` / `<Picture N>` / `<Video N>` / `<Audio N>`，关系标记 `fully_preserved` / `partially_preserved` / `attribute_transfer` / `weak_reference`。）
 
 ### ⑤ 视频编辑（对已有视频替换）
 ```
 中文版：
+integrated_multimodal_description:
 [时长/画幅]
 <Video 1> 是源视频（保留其 [人物外观/表演/运镜/时序]，仅改 [目标]）。
 <Picture 1> 是 [新背景/新物体——保留其具体特征]。
 把 <Video 1> 中的 [旧物体] 替换为 [新物体/新背景]，重打光使 [主光方向] 匹配新背景。
-[分段过程描写替换后的运动，每镜必带 [Shot n]；若源视频含对白且需改词，新对白用 <d>[语言] 台词</d> 包装]
 [Shot 1] [景别]。[替换后的动作]。[保留的原运镜]。
+[Shot 2] At 00:0X.XXX, 镜头切到 [景别]。[替换后的动作]。
 overall_soundscape：[…]；non_diegetic_music：[… 或 N/A]
 PRESERVE：[源视频需原样保留的部分]  AVOID：[穿帮/光线错位…]
 
 英文版：
+integrated_multimodal_description:
 [Duration/aspect]
 <Video 1> is the source clip (preserve its [appearance/performance/camera/timing]; only [target] changes).
 <Picture 1> is the [new background/object — preserve its specifics].
 Replace [old] in <Video 1> with [new], relight to match [key light direction].
-[process… every shot prefixed with [Shot n]; if dialogue is replaced, wrap the new line as <d>[Chinese] 台词原句</d> or <d>[English] line.</d> per the script's original language]
 [Shot 1] [shot size]. [action after replacement]. [original camera move preserved].
+[Shot 2] At 00:0X.XXX, the camera cuts to [shot size]. [action after replacement].
 overall_soundscape: […]; non_diegetic_music: [… or N/A]
 PRESERVE: […]  AVOID: […]
 ```
-（例：Replace the cat in the video with a golden retriever. Keep the camera move, lighting and background unchanged.）
+（例：Replace the cat in the video with a golden retriever. Keep the camera move, lighting and background unchanged. 若源视频含对白且需改词，新对白用 <d>[语言] 台词</d> 包装，语言标签按脚本原语言。）
 
 ### ⑥ 数字人 / 虚拟人口播（角色图 + 可选声音 / 背景）
 
@@ -404,33 +426,35 @@ PRESERVE: […]  AVOID: […]
 
 ```
 中文版：
+integrated_multimodal_description:
 [时长/画幅]
 <Picture 1>：数字人角色参考——锁定人脸/发型/服装/虚拟形象造型，全程不变
 [可选] <Audio 1>：声音参考——口播音色/语速匹配这条音轨，或唱歌/伴奏的节奏与咬字基准，或直接用作配音
 [可选] <Picture 2>/<Video 1>：背景/场景参考——锁定演播厅/舞台/直播间/虚拟背景
-数字人面向镜头，但允许贴合语义的丰富肢体动作：口播时手势挥动、身体前倾强调、侧身指向、小幅走动、拿起道具；唱歌/MV 时加入律动摇摆、打拍、小幅舞蹈。形象与服装全程锁定同一人。
+数字人（S1）面向镜头，但允许贴合语义的丰富肢体动作：口播时手势挥动、身体前倾强调、侧身指向、小幅走动、拿起道具；唱歌/MV 时加入律动摇摆、打拍、小幅舞蹈。形象与服装全程锁定同一人。
 镜头不必一镜到底——可在「说话的停顿/句尾呼吸处」或「歌曲的乐句换气处/强拍」切换景别与角度（正面 MCU → 侧 15–45° → 过肩 → 低角度仰拍 → 手部/乐器 ECU 插入镜）；每次切换主体仍是同一个数字人，切点用插入镜或景别跳变自然过渡，绝不切在咬字或歌词中途。
-[分段过程]（口播/唱词脚本按镜切分，每镜必带 [Shot n]，台词/歌词必须用 <d> 包装）
-[Shot 1] 正面 MCU。她面向镜头微笑开口，右手小幅上抬  <d>[Chinese] 口播脚本第一句原文</d>。镜头极缓推入。
-[Shot 2] 侧 30° MS。她身体前倾强调，左手向画面右侧指向  <d>[Chinese] 口播脚本第二句原文</d>。镜头静态。
+[Shot 1] 正面 MCU。她（S1）面向镜头微笑开口，右手小幅上抬  <d>[Chinese] 口播脚本第一句原文</d>。镜头极缓推入。
+[Shot 2] At 00:0X.XXX, 镜头切到 侧 30° MS。她（S1）身体前倾强调，左手向画面右侧指向  <d>[Chinese] 口播脚本第二句原文</d>。镜头静态。
 （切点落在两句之间的语义停顿处；台词逐字照抄用户脚本，不改写、不翻译、不合并）
 光色以柔和正面蝶光为主（5600K，两侧 −1.5 档补光，光比 1.3:1），允许机位角度带来的光位自然偏移；避免会照出建模转折面的硬侧光/顶光。
 口播 ASL 3–6s，剪辑点卡在语义停顿；唱歌随节拍，剪辑点卡在乐句换气/重拍。口型对齐误差 <80ms，随机眨眼（每 3–5 秒一次、间隔不规律），每 10s 至少一次非语义微动作。
+overall_soundscape：[…]；non_diegetic_music：[… 或 N/A]
 PRESERVE：[数字人形象/服装稳定，口型与各 <d> 块内台词逐字对齐、误差 <80ms，随机眨眼，主体始终是同一人]  AVOID：[形象漂移/口型错位/台词被改写或翻译/面部变形/等间隔机械眨眼/硬侧光/在咬字或歌词中途切镜]
 
 英文版：
+integrated_multimodal_description:
 [Duration/aspect]
 <Picture 1>: digital human character reference — preserve face/hair/costume/avatar look, unchanged throughout.
 [opt] <Audio 1>: voice/music reference — match its timbre/pace or song beat & enunciation; or use directly as voiceover.
 [opt] <Picture 2>/<Video 1>: background/scene reference — studio/stage/livestream/virtual set.
-Digital human faces camera with semantically motivated body movement (hand gestures, lean-in to emphasize, turn to point, small steps, pick up a prop; for singing/MV add sway, beat-tapping, light choreography). Same avatar & costume locked across all shots.
+Digital human (S1) faces camera with semantically motivated body movement (hand gestures, lean-in to emphasize, turn to point, small steps, pick up a prop; for singing/MV add sway, beat-tapping, light choreography). Same avatar & costume locked across all shots.
 Camera need not hold one take — cut on spoken pauses/breaths or on song phrase-breaths/downbeats, varying angle & size (frontal MCU → 15–45° side → over-shoulder → low-angle → hand/instrument ECU insert); subject stays the same digital human every cut, transitions hidden by inserts or size jumps, never cut mid-word or mid-lyric.
-[Shot-by-shot] (script split per shot, every shot prefixed with [Shot n], every line wrapped in <d>)
-[Shot 1] Frontal MCU. She smiles into lens, right hand lifts slightly, saying  <d>[Chinese] 口播脚本第一句原文</d>. Camera pushes in very slowly.
-[Shot 2] 30° side MS. She leans in for emphasis, left hand points frame-right, saying  <d>[Chinese] 口播脚本第二句原文</d>. Static camera.
+[Shot 1] Frontal MCU. She (S1) smiles into lens, right hand lifts slightly, saying  <d>[Chinese] 口播脚本第一句原文</d>. Camera pushes in very slowly.
+[Shot 2] At 00:0X.XXX, the camera cuts to 30° side MS. She (S1) leans in for emphasis, left hand points frame-right, saying  <d>[Chinese] 口播脚本第二句原文</d>. Static camera.
 (Cut on the semantic pause between lines; <d> blocks are copied verbatim from the user's script — never rewritten, translated or merged.)
 Soft frontal butterfly key ~5600K, -1.5 stop side fill, 1.3:1; avoid hard/raking light that reveals mesh facets.
 Talking-head ASL 3–6s with cuts on semantic pauses; singing cuts on phrase-breaths/beats. Lip-sync <80ms, irregular blink every 3–5s, one non-semantic micro-movement per 10s.
+overall_soundscape: […]; non_diegetic_music: [… or N/A]
 PRESERVE: [stable avatar/costume, lip-sync locked verbatim to each <d> block within <80ms, irregular blink, same subject every cut]  AVOID: [identity drift/mismatch/rewritten or translated lines/facial morph/robotic blink/hard light/cut mid-word or mid-lyric]
 ```
 
@@ -450,6 +474,8 @@ PRESERVE: [stable avatar/costume, lip-sync locked verbatim to each <d> block wit
 | Steadicam follow | 稳定器跟拍 | 稳定器跟拍角色背影 |
 | Rack focus | 移焦 | 从前景虚化转到背景实焦 |
 | Dutch angle | 荷兰角 | 画面微倾制造不安 |
+
+> **运镜写法（官方约定）**：一个完整的运镜动作由**运动类型 + 幅度 + 速度**三维度组成，写成镜头内的自然英文动作，而非句尾堆标签。幅度（`with small/large amplitude`）与速度（`at slow/fast speed`）只在有意义时才写，中等幅度/常速通常省略。例：`The camera pushes in with small amplitude at slow speed toward the folded letter.` / `The camera pans right with large amplitude at fast speed, revealing the open doorway.` 中文版对应写"镜头缓慢小幅度推向折好的信""镜头大幅快速向右摇，露出敞开的门口"。
 
 ## 常见错误与单变量修复（生成跑偏时，只改一项）
 

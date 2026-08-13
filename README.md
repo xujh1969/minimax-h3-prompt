@@ -32,7 +32,7 @@ Turn a simple story / idea into **MiniMax H3 (Hailuo 3)**-compliant video-genera
 
 | # | Rule | Explanation |
 |---|---|---|
-| 1 | **Three-tier layered structure** | A complete prompt = `Reference Assets` + `Core Creative` + `Segmented Process`. Most failures come from dumping everything into one unlayered block. |
+| 1 | **Official main field `integrated_multimodal_description:`** | The whole prompt body is wrapped under `integrated_multimodal_description:` — it holds the core creative line (subject + action + environment + camera + light/style + constraint, **written in time order**) AND every `[Shot n]` segment. Reference assets sit in a leading `Reference Assets` block; sound goes in standalone `overall_soundscape:` / `non_diegetic_music:` lines. Never wrap the body in bracketed Chinese labels like `[Core Creative]` / `[Segmented Process]` / `[Sound Design]` — H3 parses by field name. |
 | 2 | **Six elements embedded in the core-creative line** | Subject + Action + Environment + Camera + Light/Style + Constraint; **actions must be written in time order**. |
 | 3 | **Reference assets use only bracketed sequential tokens — never paths** | Assets are uploaded by the user; the platform auto-maps them to `<Picture 1> / <Video 1> / <Audio 1>` by upload order; **asset notes and body text only reference these tokens, never local/network paths**; tokens stay identical in the Chinese and English versions (the type word is always `Picture/Video/Audio`, never translated). **Each token must be followed by "`—— role description`"**. |
 | 4 | **Bilingual output** | Defaults to Chinese narrative + English camera-movement terms (English lens words are less ambiguous). |
@@ -89,6 +89,14 @@ English version: [Shot 2] CU. She smiles and says <d>[Chinese] 我今天太高�
 ✗ Shot 2: She says: "I'm so happy today"                 ← no [Shot n], quoted dialogue
 ✗ [Shot 2] She says <d>[English] I'm so happy today</d>  ← original line was Chinese; both tag and content were translated
 ```
+
+**Iron Rule C · Body must be wrapped in the official `integrated_multimodal_description:` field**
+
+| Requirement | Detail |
+|---|---|
+| Main field | The subject description and **all shots** go under `integrated_multimodal_description:` (this exact English label is used in both the Chinese and English versions) |
+| Sound fields | `overall_soundscape:` / `non_diegetic_music:` must be **standalone field lines**, never mixed into the body text |
+| No Chinese labels | Do not wrap the body in bracketed Chinese-style labels like `[Core Creative]` / `[Segmented Process]` / `[Sound Design]` — they are not in H3's field table and will not be parsed |
 
 ---
 
@@ -160,23 +168,25 @@ minimax-h3-prompt/
 
 > **General convention ①**: assets are numbered by upload order as `<Picture 1> / <Video 1> / <Audio 1>`, **tokens only, no paths**; each token is followed by "`—— role description`".
 >
-> **General convention ② (Format Iron Rules, see I.C)**: every shot must be prefixed with `[Shot n]` (even a single-shot piece writes `[Shot 1]`); all dialogue must be wrapped as `<d>[Chinese] …</d>` or `<d>[English] …</d>`, the language tag following the original script and the block staying verbatim across both language versions. All six examples below already follow this format.
+> **General convention ② (Format Iron Rules, see I.C)**: every shot must be prefixed with `[Shot n]` (even a single-shot piece writes `[Shot 1]`); all dialogue must be wrapped as `<d>[Chinese] …</d>` or `<d>[English] …</d>`, the language tag following the original script and the block staying verbatim across both language versions; the whole body must sit under the official `integrated_multimodal_description:` field, with `overall_soundscape:` / `non_diegetic_music:` as standalone field lines. All six examples below already follow this format (Chinese-readable version shown; submit the structurally-identical English version to H3).
 
 ### ① Text-to-Video (pure text idea, no assets) — corresponds to "text-to-image"
 No reference assets needed; good for "I have an idea, write it into a film".
 
 ```
 User: /minimax-h3 a girl runs through a neon alley on a rainy night, dodging a shadow chasing from behind
-── Output skeleton ──
+── Output skeleton (Chinese-readable version; English version is the canonical submission, same structure & field names) ──
+integrated_multimodal_description:
 [Duration/Aspect] 10s / 16:9
-[Core Creative] A short-haired girl in a red dress sprints through a neon back-alley on a rainy night; the wet ground mirrors the colored glints of signs on both sides,
+Live-action, cinematic. A short-haired girl in a red dress sprints through a neon back-alley on a rainy night; the wet ground mirrors the colored glints of signs on both sides,
            and a hunched shadow looms after her from behind. The camera tracks low to the ground, catching the splash she kicks and the flick of her skirt,
            then snaps a hard push-in the instant the shadow closes in, pressing the tension into the viewer's face. Overall cool-blue ambient light,
            with the red dress and neon highlights as the only warm focal points, amplifying "the loneliness of being chased".
-[Segmented Process] [Shot 1] 0–4s WS, running established, low ground-level tracking.
-         [Shot 2] 4–7s MS, shadow enters frame and accelerates, hard push-in.
-         [Shot 3] 7–10s ELS, sharp turn and vanish into a side alley.
-[Sound Design] overall_soundscape=rain + footsteps + distant siren; non_diegetic_music=N/A
+[Shot 1] WS, running established, low ground-level tracking.
+[Shot 2] At 00:04.000, the camera pushes in hard to MS as the shadow enters frame and accelerates.
+[Shot 3] At 00:07.000, the shot cuts to ELS, sharp turn and vanish into a side alley.
+overall_soundscape: rain + footsteps + distant siren
+non_diegetic_music: N/A
 PRESERVE=[red dress / short hair / cool-blue tone]  AVOID=[face distortion / jump-cut / warm color]
 ```
 
@@ -188,12 +198,16 @@ User: (paste character image) /minimax-h3 have her turn her head and smile, with
 ── Output skeleton ──
 [Reference Assets]
 <Picture 1>: character reference — lock face / hairstyle / red dress / pose, preserve fully
+integrated_multimodal_description:
 [Duration/Aspect] 10s / 9:16
-[Core Creative] Using the character locked by <Picture 1> as the first frame, the girl first turns her head with the smallest amplitude, her hair and shoulder line swaying with the motion,
+For the target video, at 0.00 seconds into the target video, <Picture 1> (from [Shot 1]) is fully referenced.
+Using the character locked by <Picture 1> as the first frame, the girl first turns her head with the smallest amplitude, her hair and shoulder line swaying with the motion,
            her gaze withdrawing from off-frame and landing on the lens; then her mouth curves from pressed to raised, blooming into a natural, unforced smile,
            facial muscles and micro-expressions coherent frame by frame. The background neon sign flickers at low frequency, rising and falling like breath,
            preserving the original image's mood while bringing the frame "alive", never breaking the costume or composition fixed by the first frame.
-[Segmented Process] [Shot 1] one continuous take, no cut: 0–5s turn head, hair sways; 5–10s smile blooms, ending on a living smile.
+[Shot 1] one continuous take, no cut: 0–5s turn head, hair sways; 5–10s smile blooms, ending on a living smile.
+overall_soundscape: low neon hum + fabric rustle
+non_diegetic_music: N/A
 PRESERVE=[face / costume / color / composition of <Picture 1>]  AVOID=[face distortion / flicker]
 ```
 
@@ -206,12 +220,16 @@ User: (Image 1 empty bottle) (Image 2 full bottle) /minimax-h3 the pouring proce
 [Reference Assets]
 <Picture 1>: first frame — empty glass bottle, lit from the left
 <Picture 2>: last frame — full bottle, liquid level reached, light spot on the body
+integrated_multimodal_description:
 [Duration/Aspect] 8s / 16:9
-[Core Creative] One uninterrupted shot begins from <Picture 1>'s empty-bottle state: liquid pours from the mouth, column steady and centered,
+How the reference pictures align with the target video — <Picture 1> (from [Shot 1]) aligns with the 0.00-second mark; <Picture 2> (from [Shot 1]) aligns with the 8.00-second mark.
+One uninterrupted shot begins from <Picture 1>'s empty-bottle state: liquid pours from the mouth, column steady and centered,
            the level rises evenly with the pour, bubbles and wall-adhesion detail real; the bottle slowly rotates, letting <Picture 1>'s left-side light
            gradually transition to <Picture 2>'s light-spot position. The camera eases a very slow push-in as the level rises,
            ending precisely locked on <Picture 2>'s full-bottle state — level, light spot, label angle pixel-aligned with the last frame.
-[Segmented Process] [Shot 1] one continuous take, no cut: 0–5s pour, level rises evenly; 5–8s ultra-slow push-in landing exactly on <Picture 2>'s state.
+[Shot 1] one continuous take, no cut: 0–5s pour, level rises evenly; 5–8s ultra-slow push-in landing exactly on <Picture 2>'s state.
+overall_soundscape: liquid pour + faint bubble
+non_diegetic_music: N/A
 PRESERVE=[bottle shape / label / stable elements between the two frames]  AVOID=[jump-cut / level misalignment]
 ```
 
@@ -227,14 +245,17 @@ User: (character image) (product image) (camera-reference video) (ambient audio 
 <Picture 2>: object reference — lock headphone color / buckle / material
 <Video 1>: camera reference — match its push-in rhythm
 <Audio 1>: audio reuse — use this track directly as the sound
+integrated_multimodal_description:
 [Duration/Aspect] 15s / 16:9
-[Core Creative] The model naturally tries the headphone in a store setting: first raises hand to wear it, then turns to show, finally makes a selling-point gesture at the lens,
+The model naturally tries the headphone in a store setting: first raises hand to wear it, then turns to show, finally makes a selling-point gesture at the lens,
            the whole action keeps a consistent push-in rhythm with <Video 1>'s camera reference — medium shot to establish, mid close-up on headphone detail,
            back to medium at the end. The environment is a real brand-store tone; product color / buckle / material strictly locked to <Picture 2>.
            Sound directly reuses <Audio 1>'s track; voiceover and BGM rhythm align with the picture's cut points, achieving "picture and sound from one source".
-[Segmented Process] [Shot 1] 0–4s MS establishes, raises hand to wear the headphone.
-         [Shot 2] 4–10s CU on headphone buckle & material, turns to show.
-         [Shot 3] 10–15s back to MS, selling-point gesture at lens, she says <d>[Chinese] 这款耳机戴一整天都不累</d> (sound references <Audio 1> rhythm).
+[Shot 1] MS establishes, raises hand to wear the headphone.
+[Shot 2] At 00:04.000, the camera cuts to CU on headphone buckle & material, turns to show.
+[Shot 3] At 00:10.000, back to MS, selling-point gesture at lens, (S1) she says <d>[Chinese] 这款耳机戴一整天都不累</d> (sound references <Audio 1> rhythm).
+overall_soundscape: store ambient noise + buckle click
+non_diegetic_music: N/A
 PRESERVE=[each named feature to preserve]  AVOID=[…]
 ```
 
@@ -246,12 +267,15 @@ User: (source video: cat on sofa) /minimax-h3 replace the cat with a golden retr
 ── Output skeleton ──
 [Reference Assets]
 <Video 1>: source video — preserve its character appearance / performance / camera / timing, change only the target
+integrated_multimodal_description:
 [Duration/Aspect] 6s / 16:9
-[Core Creative] Keep all of <Video 1>'s performance, camera, and timing; only replace the cat on the sofa with a golden retriever:
+Keep all of <Video 1>'s performance, camera, and timing; only replace the cat on the sofa with a golden retriever:
            the dog's coat, body, and motion amplitude follow the original cat's rhythm — lazily lying down, occasionally looking up. After replacement, do local relighting,
            making the new subject's key-light direction, brightness, and shadow landing exactly match the original background's lighting, avoiding a "stuck-on decal" feel;
            sofa, cushions, background blur, and overall tone stay untouched, ensuring a seamless, non-breaking look.
-[Segmented Process] [Shot 1] one continuous take, no cut: 0–6s follows <Video 1>'s original timing, the retriever lies lazily and occasionally looks up.
+[Shot 1] one continuous take, no cut: 0–6s follows <Video 1>'s original timing, the retriever lies lazily and occasionally looks up.
+overall_soundscape: reuse <Video 1>'s original ambient sound
+non_diegetic_music: N/A
 PRESERVE=[parts of source video to keep as-is: camera / light / background]  AVOID=[breaking / light misalignment]
 > If this mode is used to **replace dialogue**, the new line must be wrapped the same way: `<d>[Chinese] 换好的新台词</d>`, and lock "lip motion matches the new line".
 ```
@@ -266,20 +290,22 @@ User: (digital-human image) (optional: voice track / background image or video)
 [Reference Assets]
 <Picture 1>: digital-human character reference — lock face / hairstyle / costume / virtual-character design, unchanged throughout
 <Audio 1>: voice reference — match this track's broadcast timbre / pace (or use directly as dubbing)
+integrated_multimodal_description:
 [Duration/Aspect] 30s / 9:16
-[Core Creative] The digital human holds a fixed frontal MCU (chest line to top of head), facing the lens and broadcasting the verbatim script throughout:
+The digital human (S1) holds a fixed frontal MCU (chest line to top of head), facing the lens and broadcasting the verbatim script throughout:
            first a slight head-drop / eye-lift to "enter"; then blinks randomly at irregular rhythm (once every 3–5s, interval deliberately unfixed),
            with slight nods and small gestures giving the broadcast a breathing feel, avoiding mechanical sync. The camera does only one ≤15% ultra-slow push-in within 30s,
            never pans. Lighting uses 5600K frontal soft butterfly light, both sides −1.5 stops fill, lighting ratio pressed to 1.3:1,
-           hard side-light absolutely forbidden (would reveal the virtual character's modeling crease surfaces, instantly dropping into the uncanny valley). Write the verbatim script into PRESERVE,
-           lip-sync must be <80ms, identity and costume locked throughout without drift.
-[Segmented Process] [Shot 1] 0–10s frontal MCU, slight head-drop / eye-lift to enter, then speaks:
+           hard side-light absolutely forbidden (would reveal the virtual character's modeling crease surfaces, instantly dropping into the uncanny valley). Lip-sync must be <80ms, identity and costume locked throughout without drift.
+[Shot 1] 0–10s frontal MCU, slight head-drop / eye-lift to enter, then speaks:
                    <d>[Chinese] 大家好，今天带来三条最值得关注的科技新闻</d>
-         [Shot 2] 10–22s 30° side over-shoulder, gestures for emphasis:
+[Shot 2] At 00:10.000, 30° side over-shoulder, gestures for emphasis:
                    <d>[Chinese] 第一条，国产芯片良率再创新高</d>
-         [Shot 3] 22–30s back to frontal MCU, wrap-up:
+[Shot 3] At 00:22.000, back to frontal MCU, wrap-up:
                    <d>[Chinese] 以上就是今天的全部内容，记得关注</d>
          (cuts land only on end-of-sentence pauses / breaths, never mid-word)
+overall_soundscape: studio light ambient noise
+non_diegetic_music: N/A
 PRESERVE=[identity / costume stable, lip-sync <80ms, random blink, same subject every cut]  AVOID=[identity drift / lip mismatch / mechanical blink / hard side-light / cutting mid-word]
 ```
 
