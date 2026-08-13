@@ -44,9 +44,51 @@ Turn a simple story / idea into **MiniMax H3 (Hailuo 3)**-compliant video-genera
 2. **Confirm mode first, never auto-decide**: Even with assets, the user may want pure text-to-video. Ask the mode first; if they pick an asset-required mode but upload nothing, prompt for assets or switch to text-to-video — never hard-generate an uncontrolled result. **Audio alone cannot be the only reference**.
 3. **Genre → Structure → Style, fixed load order, no skipping**: Every story first hits `genre-index.md` to match a genre and loads **only that one** genre file; only add ad-structure on ad keywords; only read the L3 director library when the user names a director/film. **Never load multiple genre files at once** (parameters clash).
 4. **A/B/C three-option default ignition**: When no style/director is specified, throw out three distinctly different routes (different in pacing + light/color + shot-size strategy), with parameters taken from the genre file, not invented.
-5. **Action-scene special validation**: Combat/chase/duel/sports/war hits `action-wuxia.md` and must be read fully before generation. Hard constraints: shots ÷ duration ≤ 1.5 shots/sec; ASL 0.7–1.0s; adjacent shot sizes jump ≥2 levels; calm opening, calm ending.
+5. **Action-scene special validation**: Combat/chase/duel/war hits `action-wuxia.md` and must be read fully before generation. Hard constraints: shots ÷ duration ≤ 1.5 shots/sec; ASL 0.7–1.0s; adjacent shot sizes jump ≥2 levels; calm opening, calm ending. **Competitive sports (ball games / track / swimming / motorsport / skiing / gymnastics / extreme) go to `sports.md` instead**; only close-quarters combat sports (boxing / fencing / wrestling) stay on `action-wuxia.md`.
 6. **Director-iron-law conflict resolution**: If a director's signature clashes with a genre's iron law, **the genre always wins** — cut the conflicting item, keep only non-conflicting dimensions, and attach a "conflict-resolution note". Forbidden combos (e.g. Kubrick + fast-cut, Wes Anderson + handheld, food + cold color) trigger a warning and an alternative.
 7. **Asset responsibilities must be explicit**: Every `<Picture N>/<Video N>/<Audio N>` must declare what it locks (character ref / object / scene / keyframe / camera / audio reuse / source video…); undeclared assets are ignored.
+
+### C. Format Iron Rules (non-negotiable · every output must satisfy them)
+
+These two rules govern **output format**. Both the Chinese and English prompt versions must satisfy them; failing either makes the output non-compliant and it must not be delivered.
+
+**Iron Rule A · Every shot must carry a `[Shot n]` number**
+
+| Requirement | Detail |
+|---|---|
+| Position | At the **very beginning** of that shot's description |
+| Numbering | `n` starts at 1 and increments continuously — no gaps, no duplicates |
+| Identical in both languages | The Chinese and English versions use the **exact same form** `[Shot 1]` — never localized to 「镜头 1」 or `Shot One` |
+| Single-shot pieces | Even a one-shot film must be written as `[Shot 1]` |
+| Coexisting with timestamps | `[Shot n]` comes first, timestamp right after: `[Shot 3] 5.6–6.8s: MS …` |
+
+**Iron Rule B · Dialogue must be wrapped as `<d>[Language] line</d>`**
+
+```
+Chinese line → <d>[Chinese] 我需要下一站下车</d>
+English line → <d>[English] I get off at the next station.</d>
+```
+
+| Requirement | Detail |
+|---|---|
+| Language tag source | Determined by the **original language of the line in the user's script**, not by which prompt version it sits in |
+| Verbatim in both versions | The same `<d>` block is **character-for-character identical** in the Chinese and English versions — never translated, punctuation unchanged |
+| Wrap the line only | Narration such as "She says / 她说" stays **outside** the `<d>` block |
+| Old style deprecated | Quotation-mark dialogue (e.g. `She says: "I'm so happy"`) is no longer used |
+
+**Correct example (same line across both versions)**
+
+```
+Chinese version: [Shot 2] CU 特写。她笑着说 <d>[Chinese] 我今天太高兴了</d>，视线落向画外左侧。
+English version: [Shot 2] CU. She smiles and says <d>[Chinese] 我今天太高兴了</d>, gaze off-frame left.
+```
+
+**Wrong examples**
+
+```
+✗ Shot 2: She says: "I'm so happy today"                 ← no [Shot n], quoted dialogue
+✗ [Shot 2] She says <d>[English] I'm so happy today</d>  ← original line was Chinese; both tag and content were translated
+```
 
 ---
 
@@ -57,7 +99,8 @@ The reference library uses a **four-layer (genre × structure × style × medium
 ### L1 · Genre Camera Grammar (`references/genre/`)
 - **Role**: Turns each genre — "action-wuxia / sci-fi / horror-thriller / crime / war / tech-corporate / food / anime…" — into **executable parameters**: ASL seconds, Kelvin color temperature, lighting ratio, fps, light-position name, banned camera moves, motif verbs, essential shots, failure points.
 - **How to use**: Rule 3, top priority. First read `genre-index.md` to match a genre by keyword → **load only that one** `genre/<genre>.md` → pull parameters from it into the prompt. Skipping it inevitably yields "cinematic" empty talk.
-- **Composition**: `action-wuxia.md` (action/wuxia), `scifi.md`, `horror-thriller.md`, `crime-thriller.md`, `war-military.md`, `tech-corporate.md`, `documentary.md`, `emotional-family.md`, plus the 5 long-tail subsets `long-tail-people.md` / `long-tail-stage.md` / `long-tail-media.md` / `long-tail-commercial.md` / `long-tail-special.md` (52 long-tail sub-genres total: sports / performing arts / comedy / web short-video / science-pop / digital human / romance / news…).
+- **Composition**: `action-wuxia.md` (action/wuxia), `sports.md` (competitive sports), `scifi.md`, `horror-thriller.md`, `crime-thriller.md`, `war-military.md`, `tech-corporate.md`, `documentary.md`, `emotional-family.md`, plus the 5 long-tail subsets `long-tail-people.md` / `long-tail-stage.md` / `long-tail-media.md` / `long-tail-commercial.md` / `long-tail-special.md` (52 long-tail sub-genres total: performing arts / comedy / web short-video / science-pop / digital human / romance / news…).
+  > **Sports is now standalone**: ball games / track / swimming / motorsport / skiing / gymnastics / extreme sports match `sports.md` (which includes rule-legality hard constraints: basketball travelling & double dribble, football handball, volleyball over-touch, etc.). Close-quarters combat sports (boxing / fencing / wrestling) stay on `action-wuxia.md`; esports matches go to `long-tail-media.md`.
 
 ### L2 · Commercial Ad 8 Narrative Structures (`references/commercial-ad-structures.md`)
 - **Role**: Added **only** when ad / TVC / brand film / selling-point / conversion / feed / slogan / logo keywords hit, **in addition**. Governs "**order**" (problem–solution / one-take / contrast / emotional micro-film / product-as-hero / reversal-comedy / KOL talk / flash-cut rhythm).
@@ -93,10 +136,11 @@ minimax-h3-prompt/
     ├── genre-index.md                  # four-layer entry + genre→file index + interpolation guide
     ├── genre/                          # L1 genre camera grammar
     │   ├── action-wuxia.md             #   action/wuxia (breathing curve, shot-size jumps, cause-effect validation)
+    │   ├── sports.md                   #   competitive sports (5 routes + rule-legality hard constraints + broadcast angles)
     │   ├── scifi.md  horror-thriller.md  crime-thriller.md  war-military.md
     │   ├── tech-corporate.md  documentary.md  emotional-family.md
     │   ├── long-tail-people.md         #   people/emotion/life-services (wedding·kids-pets·travel·youth·urban-romance·medical·religion)
-    │   ├── long-tail-stage.md          #   performing/stage/variety (sports·dance·concert·opera·stage·musical·variety·comedy·talk-show)
+    │   ├── long-tail-stage.md          #   performing/stage/variety (dance·concert·opera·stage·musical·variety·comedy·talk-show)
     │   ├── long-tail-media.md          #   media/knowledge/digital-human (edu·science-pop·news·virtual-human·digital-human·talk·esports·ASMR)
     │   ├── long-tail-commercial.md     #   commercial/event/livestream (finance·real-estate·travel·annual-meeting·recruit·unboxing·live-commerce)
     │   ├── long-tail-special.md        #   special-photography/fantasy/genre (gameCG·anime·underwater·aerial·macro·military·costume·xianxia·disaster·western·noir)
@@ -114,7 +158,9 @@ minimax-h3-prompt/
 
 ## IV. Six Usage Modes (core how-to)
 
-> General convention: assets are numbered by upload order as `<Picture 1> / <Video 1> / <Audio 1>`, **tokens only, no paths**; each token is followed by "`—— role description`".
+> **General convention ①**: assets are numbered by upload order as `<Picture 1> / <Video 1> / <Audio 1>`, **tokens only, no paths**; each token is followed by "`—— role description`".
+>
+> **General convention ② (Format Iron Rules, see I.C)**: every shot must be prefixed with `[Shot n]` (even a single-shot piece writes `[Shot 1]`); all dialogue must be wrapped as `<d>[Chinese] …</d>` or `<d>[English] …</d>`, the language tag following the original script and the block staying verbatim across both language versions. All six examples below already follow this format.
 
 ### ① Text-to-Video (pure text idea, no assets) — corresponds to "text-to-image"
 No reference assets needed; good for "I have an idea, write it into a film".
@@ -127,7 +173,9 @@ User: /minimax-h3 a girl runs through a neon alley on a rainy night, dodging a s
            and a hunched shadow looms after her from behind. The camera tracks low to the ground, catching the splash she kicks and the flick of her skirt,
            then snaps a hard push-in the instant the shadow closes in, pressing the tension into the viewer's face. Overall cool-blue ambient light,
            with the red dress and neon highlights as the only warm focal points, amplifying "the loneliness of being chased".
-[Segmented Process] 0–4s running established; 4–7s shadow enters frame and accelerates; 7–10s sharp turn and vanish into a side alley.
+[Segmented Process] [Shot 1] 0–4s WS, running established, low ground-level tracking.
+         [Shot 2] 4–7s MS, shadow enters frame and accelerates, hard push-in.
+         [Shot 3] 7–10s ELS, sharp turn and vanish into a side alley.
 [Sound Design] overall_soundscape=rain + footsteps + distant siren; non_diegetic_music=N/A
 PRESERVE=[red dress / short hair / cool-blue tone]  AVOID=[face distortion / jump-cut / warm color]
 ```
@@ -145,7 +193,7 @@ User: (paste character image) /minimax-h3 have her turn her head and smile, with
            her gaze withdrawing from off-frame and landing on the lens; then her mouth curves from pressed to raised, blooming into a natural, unforced smile,
            facial muscles and micro-expressions coherent frame by frame. The background neon sign flickers at low frequency, rising and falling like breath,
            preserving the original image's mood while bringing the frame "alive", never breaking the costume or composition fixed by the first frame.
-[Segmented Process] 0–5s turn head; 5–10s smile holds.
+[Segmented Process] [Shot 1] one continuous take, no cut: 0–5s turn head, hair sways; 5–10s smile blooms, ending on a living smile.
 PRESERVE=[face / costume / color / composition of <Picture 1>]  AVOID=[face distortion / flicker]
 ```
 
@@ -163,6 +211,7 @@ User: (Image 1 empty bottle) (Image 2 full bottle) /minimax-h3 the pouring proce
            the level rises evenly with the pour, bubbles and wall-adhesion detail real; the bottle slowly rotates, letting <Picture 1>'s left-side light
            gradually transition to <Picture 2>'s light-spot position. The camera eases a very slow push-in as the level rises,
            ending precisely locked on <Picture 2>'s full-bottle state — level, light spot, label angle pixel-aligned with the last frame.
+[Segmented Process] [Shot 1] one continuous take, no cut: 0–5s pour, level rises evenly; 5–8s ultra-slow push-in landing exactly on <Picture 2>'s state.
 PRESERVE=[bottle shape / label / stable elements between the two frames]  AVOID=[jump-cut / level misalignment]
 ```
 
@@ -183,7 +232,9 @@ User: (character image) (product image) (camera-reference video) (ambient audio 
            the whole action keeps a consistent push-in rhythm with <Video 1>'s camera reference — medium shot to establish, mid close-up on headphone detail,
            back to medium at the end. The environment is a real brand-store tone; product color / buckle / material strictly locked to <Picture 2>.
            Sound directly reuses <Audio 1>'s track; voiceover and BGM rhythm align with the picture's cut points, achieving "picture and sound from one source".
-[Segmented Process] 0–4s wear & show; 4–10s turn & close-up on headphone detail; 10–15s selling-point gesture at lens (sound references <Audio 1> rhythm)
+[Segmented Process] [Shot 1] 0–4s MS establishes, raises hand to wear the headphone.
+         [Shot 2] 4–10s CU on headphone buckle & material, turns to show.
+         [Shot 3] 10–15s back to MS, selling-point gesture at lens, she says <d>[Chinese] 这款耳机戴一整天都不累</d> (sound references <Audio 1> rhythm).
 PRESERVE=[each named feature to preserve]  AVOID=[…]
 ```
 
@@ -200,7 +251,9 @@ User: (source video: cat on sofa) /minimax-h3 replace the cat with a golden retr
            the dog's coat, body, and motion amplitude follow the original cat's rhythm — lazily lying down, occasionally looking up. After replacement, do local relighting,
            making the new subject's key-light direction, brightness, and shadow landing exactly match the original background's lighting, avoiding a "stuck-on decal" feel;
            sofa, cushions, background blur, and overall tone stay untouched, ensuring a seamless, non-breaking look.
+[Segmented Process] [Shot 1] one continuous take, no cut: 0–6s follows <Video 1>'s original timing, the retriever lies lazily and occasionally looks up.
 PRESERVE=[parts of source video to keep as-is: camera / light / background]  AVOID=[breaking / light misalignment]
+> If this mode is used to **replace dialogue**, the new line must be wrapped the same way: `<d>[Chinese] 换好的新台词</d>`, and lock "lip motion matches the new line".
 ```
 
 ### ⑥ Digital Human / Virtual Avatar Speaking (character image + optional voice / background)
@@ -220,7 +273,14 @@ User: (digital-human image) (optional: voice track / background image or video)
            never pans. Lighting uses 5600K frontal soft butterfly light, both sides −1.5 stops fill, lighting ratio pressed to 1.3:1,
            hard side-light absolutely forbidden (would reveal the virtual character's modeling crease surfaces, instantly dropping into the uncanny valley). Write the verbatim script into PRESERVE,
            lip-sync must be <80ms, identity and costume locked throughout without drift.
-PRESERVE=[identity / costume stable, lip-sync <80ms, random blink]  AVOID=[identity drift / lip mismatch / mechanical blink / hard side-light]
+[Segmented Process] [Shot 1] 0–10s frontal MCU, slight head-drop / eye-lift to enter, then speaks:
+                   <d>[Chinese] 大家好，今天带来三条最值得关注的科技新闻</d>
+         [Shot 2] 10–22s 30° side over-shoulder, gestures for emphasis:
+                   <d>[Chinese] 第一条，国产芯片良率再创新高</d>
+         [Shot 3] 22–30s back to frontal MCU, wrap-up:
+                   <d>[Chinese] 以上就是今天的全部内容，记得关注</d>
+         (cuts land only on end-of-sentence pauses / breaths, never mid-word)
+PRESERVE=[identity / costume stable, lip-sync <80ms, random blink, same subject every cut]  AVOID=[identity drift / lip mismatch / mechanical blink / hard side-light / cutting mid-word]
 ```
 
 ---
@@ -301,11 +361,12 @@ This Skill doesn't rely on empty "cinematic" talk; instead it turns the **nameab
 
 ### 7.1 Referenceable Video Types (genre → `genre/`)
 
-**13 core genres** (standalone files, load only the matched one):
+**14 core genres** (standalone files, load only the matched one):
 
 | Genre | Trigger keywords |
 |---|---|
 | Action Wuxia | fight / duel / chase / martial-arts / wuxia / action film / fast-cut |
+| Sports Competition | sports / match / tournament / ball-game / basketball / football / track / swimming / motorsport / skiing / gymnastics / extreme-sports |
 | Food | food / dining / dish / coffee / hotpot /探店 / mukbang |
 | Product | product / still-life / 3C / phone / e-commerce / unboxing |
 | Fashion Beauty | fashion / runway / beauty / lipstick / perfume / model |
@@ -319,7 +380,7 @@ This Skill doesn't rely on empty "cinematic" talk; instead it turns the **nameab
 | War Military | war / military / battlefield / soldier / trench / tactics |
 | Crime Thriller | crime / gangster /推理 / murder / detective / interrogation / mob |
 
-**52 long-tail sub-genres** (split into 5 theme subsets `long-tail-people.md` / `long-tail-stage.md` / `long-tail-media.md` / `long-tail-commercial.md` / `long-tail-special.md`, keywords abridged): sports-competition · performing-arts/stage · comedy/sitcom · urban-romance/idol-drama · suspense-crime · education/knowledge (science-pop) · **virtual-human/digital-human talk** · web-short-video/livestream · news · animation/2D · gameCG/esports · underwater/aerial/macro/industrial · road/rainy-night/retro · costume-history/xianxia/youth/disaster/western/noir · travel/annual-meeting/recruit/ASMR · religious-wedding/kids-pets/travel.
+**52 long-tail sub-genres** (split into 5 theme subsets `long-tail-people.md` / `long-tail-stage.md` / `long-tail-media.md` / `long-tail-commercial.md` / `long-tail-special.md`, keywords abridged): performing-arts/stage · comedy/sitcom · urban-romance/idol-drama · suspense-crime · education/knowledge (science-pop) · **virtual-human/digital-human talk** · web-short-video/livestream · news · animation/2D · gameCG/esports · underwater/aerial/macro/industrial · road/rainy-night/retro · costume-history/xianxia/youth/disaster/western/noir · travel/annual-meeting/recruit/ASMR · religious-wedding/kids-pets/travel.
 
 > When no match, use "interpolation": split the genre into *rhythm / light-color / shot-size / structure* four dimensions, borrowing each from the nearest genre (see `genre-index.md` section 6).
 
