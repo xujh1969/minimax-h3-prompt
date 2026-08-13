@@ -22,6 +22,40 @@ description: 把用户的简单故事情节/创意，转换为符合 MiniMax H3 
 3. **每个参考素材都要声明角色+用途，且只用带括号的顺序 token、绝不写文件路径**。素材由用户上传，平台按上传顺序自动映射为 `<Picture 1> / <Video 1> / <Audio 1>` 等带括号固定 token；素材说明与正文一律引用该 token（如 `<Picture 1>：角色参考——锁定人脸/发型`），**不写本地/网络路径**；token 在中文版与英文版提示词中保持不变（不翻译，类型词始终为 `Picture/Video/Audio`，不用"图片/视频/音频"）。每个 token 后必须接"`——作用说明`"。未声明用途的素材会被模型无视。  **用途必须由 Agent 先用提问向用户逐一确认（见步骤 1.5 阻塞步骤），不得由 Agent 自行默认整张图全参考。**
 4. **中英文都吃**。本技能默认输出**中英双语版**（中文叙述 + 英文运镜术语；英文镜头词歧义更小）。
 5. **一次只改一个变量**迭代。
+6. **【铁律·分镜编号】每一个分镜前必须加 `[Shot n]`**（n 为镜头序号，从 1 开始连续递增），**中文版与英文版都必须加，格式完全一致**（都写 `[Shot 1]`，不译成"镜头 1"）。单镜片子也要写 `[Shot 1]`。详见步骤 4「格式铁律」。
+7. **【铁律·台词包装】镜头里人物说话时，台词本体必须用 `<d>[语言] 台词</d>` 包装**，语言标签取决于**用户输入脚本里台词原本用的语言**：中文台词 → `<d>[Chinese] 我需要下一站下车</d>`；英文台词 → `<d>[English] I get off at the next station.</d>`。**同一个 `<d>` 块在中文版与英文版提示词里逐字相同、不翻译、不改标点**。详见步骤 4「格式铁律」。
+
+## 格式铁律（不可协商 · 每次输出都必须满足）
+
+这两条是**输出格式硬约束**，与题材、模式、时长、粒度无关，任何一种模式（①②③④⑤⑥）都适用。违反即视为交付失败，必须重写。
+
+### 铁律 A · 分镜必须带 `[Shot n]` 编号
+
+- **每一个分镜的最前面**都要写 `[Shot n]`，n 从 1 开始连续递增，不跳号、不重复。
+- **中英文版格式完全一致**：两版都写 `[Shot 1]` / `[Shot 2]`，**英文不写 `Shot One`，中文不写"镜头 1""第 1 镜"**。
+- 与时间戳共存时，**`[Shot n]` 在最前，时间戳紧随其后**：
+  - 中文：`[Shot 3] 4.2–5.6s：MS 中景。她抬手指向餐桌。镜头随手势向右摇。`
+  - 英文：`[Shot 3] 4.2–5.6s: MS. She raises her hand pointing at the table. Camera pans right with the gesture.`
+- **不带时间戳时同样要写**：`[Shot 1] MCU 中近景。她抬头微笑。镜头极缓推入。`
+- **单镜（一镜到底）也要写 `[Shot 1]`**，不能因为只有一个镜头就省略。
+- 编号是提示词正文的一部分，**必须在可复制代码块内**，不是给用户看的注释。
+
+### 铁律 B · 台词必须用 `<d>[语言] 台词</d>` 包装
+
+- 只要镜头里有人物说话（对白、独白、旁白由角色说出、口播、唱词），**台词本体必须写成**：
+  - 中文台词：`<d>[Chinese] 我需要下一站下车</d>`
+  - 英文台词：`<d>[English] I get off at the next station.</d>`
+- **语言标签由用户输入脚本的台词语言决定，不由提示词版本决定**：
+  - 用户脚本里台词是中文 → 中文版和英文版**都**插入 `<d>[Chinese] 中文原句</d>`；
+  - 用户脚本里台词是英文 → 中文版和英文版**都**插入 `<d>[English] English line.</d>`；
+  - **禁止为了"英文版"把中文台词翻译成英文**，也禁止把英文台词译成中文。台词是要被模型念出来的音频内容，翻译即改词。
+- **只包台词本体**，"她说 / She says" 这类说话动作描写留在 `<d>` 外面：
+  - 中文：`[Shot 2] CU 特写。她笑着说 <d>[Chinese] 我今天太高兴了</d>，视线落向画外左侧。`
+  - 英文：`[Shot 2] CU. She smiles and says <d>[Chinese] 我今天太高兴了</d>, gaze off-frame left.`
+- **不再用引号写台词**（旧写法 `她说："你来了。"` 已作废），一律用 `<d>` 包装。
+- 多句台词分属不同镜头时，**各自放在所属 `[Shot n]` 段落内**，不要把整段台词堆在开头。同一镜头内多句可写多个 `<d>` 块。
+- 台词只包一次，**不要在 `[PRESERVE]` 里重复整句**；`PRESERVE` 只写"口型与 `<d>` 内台词严格对齐"这类约束。
+- 若用户脚本里**混用中英**（如中文对话夹一句英文），按**每句台词各自的语言**分别打标签。
 
 ## 工作流（严格按顺序）
 
@@ -165,10 +199,12 @@ C · 极简高级向  —— 一句话画面 ｜ ASL / 光色 / 关键手法
 [核心创意]          ← 一句话嵌六要素：主体/动作/环境/镜头/光线风格/限制
 [主体] 在 [场景] 中 [动作]，以 [运镜] 拍摄，[光线/氛围]。
 
-[分段过程]          ← 默认不带时间戳；仅多动作节点才分段
-（单动作）[景别]。[动作]。[运镜]。[声音]。
-（多动作）0–Xs：[景别]。[动作]。[运镜]。[声音]。
-         X–Ys：[景别]。[动作]。[运镜]。[声音]。
+[分段过程]          ← 每个分镜必须以 [Shot n] 开头（铁律 A）；时间戳默认不带，仅多动作节点才分段
+（单动作）[Shot 1] [景别]。[动作]。[运镜]。[声音]。
+（多动作）[Shot 1] 0–Xs：[景别]。[动作]。[运镜]。[声音]。
+         [Shot 2] X–Ys：[景别]。[动作]。[运镜]。[声音]。
+（有台词）[Shot 2] X–Ys：[景别]。[动作，含"她说"]  <d>[Chinese] 台词原句</d>。[运镜]。[声音]。
+         ← 台词必须用 <d>[语言] …</d> 包装（铁律 B），中英文版逐字相同、不翻译
 
 [声音设计]
 overall_soundscape（环境声）：[具体声音，或 N/A]
@@ -183,7 +219,8 @@ non_diegetic_music（非叙事音乐）：[风格/情绪，或 N/A]
 - **文生视频（①）省略「参考素材说明」块**，视觉描写写得更细（至少覆盖：主体外貌 + 场景 + 动作 + 风格）。
 - **音频块所有模式统一带**。无音频文件时纯文字描述 `overall_soundscape` 声景，或写 `N/A`；不要音乐写 `non_diegetic_music: N/A`。**不要一行要配乐另一行禁音乐**（官方明列失败模式）。
 - **立体声左右定位为可选项**：在声音设计里提示"可指定左/右声道位置"（如 footsteps pan left→right），不强制。
-- **对白**：原句写进对应分段，用引号保留原语言与标点；中英双语都给。例：她说："你来了。" / She says: "You came."
+- **分镜编号（铁律 A · 见上文「格式铁律」）**：每个分镜前必须写 `[Shot n]`，中英文版格式一致（都写 `[Shot 1]`），与时间戳共存时 `[Shot n]` 在前、时间戳紧随。单镜也写 `[Shot 1]`。
+- **对白（铁律 B · 见上文「格式铁律」）**：台词本体必须用 `<d>[语言] 台词</d>` 包装，语言标签取决于**用户脚本里台词的原语言**（中文台词 → `[Chinese]`，英文台词 → `[English]`），**中文版与英文版插入的 `<d>` 块逐字相同、绝不翻译**；"她说 / She says" 等说话动作写在 `<d>` 外。示例：`[Shot 2] CU 特写。她笑着说 <d>[Chinese] 我今天太高兴了</d>。` / `[Shot 2] CU. She smiles and says <d>[Chinese] 我今天太高兴了</d>.`
 - **PRESERVE / AVOID：所有模式默认带**（① 文生可写"无特殊约束"）。参考/首尾帧/数字人模式强制锁身份。
 - **时间戳分段**：默认不带；仅当视频含多个动作节点时才分段（0–3s / 3–7s…）。
   **动作场景例外**：打斗/追逐必须分段，且时间戳**精确到 0.1s**、**镜头时长长短交错**（禁止等分），并为每镜写全「景别 + 单一动作 + 单一运镜 + 切换方式/速度标记」四件套（详见 `references/genre/action-wuxia.md`）。——**动作戏默认详细逐镜头分镜，不向用户询问粒度选择**（详见该文件「提示词粒度」一节）。
@@ -212,6 +249,10 @@ non_diegetic_music（非叙事音乐）：[风格/情绪，或 N/A]
 8. 写了清楚的结束状态（最后停在哪）。
 9. 全文无互相冲突的要求（尤其音乐开关、运镜静止 vs 运动）。
 10. 计划"看到结果后一次只改一个变量"。
+
+**格式铁律追加 2 条（所有模式 · 不满足禁止交付）**：
+- ⓐ **每个分镜是否都以 `[Shot n]` 开头**、序号从 1 连续递增无跳号，**且中文版与英文版都写了、格式一致**（都是 `[Shot 1]` 而非"镜头 1"/`Shot One`）？单镜是否也写了 `[Shot 1]`？`[Shot n]` 是否在时间戳之前？
+- ⓑ **所有台词是否都用 `<d>[语言] 台词</d>` 包装**、语言标签是否与**用户脚本里台词的原语言**一致？**中英两版的 `<d>` 块是否逐字相同、没有被翻译**？是否只包了台词本体（"她说/She says"留在外面）、没有残留引号写法、没有在 PRESERVE 里重复整句台词？
 
 **镜头连贯性追加（所有多镜 / 分段场景）**：① 逐对检查相邻镜头——Shot N+1 的主体是否在 Shot N 已出现/已建立（无凭空冒出的新物体/新角色）？② Shot N+1 的动作是否承接 Shot N 的结果/状态，而非无故中断、替换为另一条事件线？③ 任一为否 → 重写 Shot N（铺垫新元素的存在与方位）或重写 Shot N+1（改为承接上一条线），**禁止"断点跳转"**。典型反例：上一镜"汽车撞击摩托" → 下一镜"汽车撞亭子"（亭子凭空出现、撞摩托的线被吞掉）。
 
@@ -259,7 +300,8 @@ non_diegetic_music（非叙事音乐）：[风格/情绪，或 N/A]
 中文版：
 [时长/画幅], [风格]。
 [主体外貌] 位于 [环境]。
-先发生 [动作1]，接着 [动作2]。镜头以 [速度] 进行 [一种运镜]。
+[Shot 1] 先发生 [动作1]。镜头以 [速度] 进行 [一种运镜]。
+[Shot 2] 接着 [动作2]（若有台词：她说 <d>[Chinese] 台词原句</d>）。[运镜]。
 [可见光线/氛围]。最后停在 [明确结束状态]。
 保持 [角色/物体/颜色/构图限制] 不变。
 overall_soundscape：[具体声音]；non_diegetic_music：[风格 或 N/A]
@@ -267,7 +309,9 @@ PRESERVE：[…]  AVOID：[…]
 
 英文版：
 [Duration/aspect], [style].
-[Subject] is in [environment]. [Action1], then [action2]. Camera [one camera move] at [speed].
+[Subject] is in [environment].
+[Shot 1] [Action1]. Camera [one camera move] at [speed].
+[Shot 2] [Action2] (with dialogue: she says <d>[Chinese] 台词原句</d> — same <d> block as the Chinese version, never translated). [camera move].
 [Visible light/mood]. End on [clear end state]. Keep [constraints].
 overall_soundscape: […]; non_diegetic_music: [… or N/A]
 PRESERVE: […]  AVOID: […]
@@ -278,8 +322,7 @@ PRESERVE: […]  AVOID: […]
 中文版：
 [时长/画幅]
 以 <Picture 1> 作为视频首帧，完整保留 [面部/服装/颜色/构图/光线]。
-[主体] 先做 [第一个小动作]，再连续完成 [主要动作]。
-镜头进行 [一种运镜]，同时 [背景或光线变化]。
+[Shot 1] [主体] 先做 [第一个小动作]，再连续完成 [主要动作]（若有台词：她说 <d>[Chinese] 台词原句</d>）。镜头进行 [一种运镜]，同时 [背景或光线变化]。
 保持 [身份/服装/形状/布局/产品细节] 不变。
 overall_soundscape：[…]；non_diegetic_music：[… 或 N/A]
 PRESERVE：[锁定图中特征]  AVOID：[面部变形/闪烁…]
@@ -287,7 +330,7 @@ PRESERVE：[锁定图中特征]  AVOID：[面部变形/闪烁…]
 英文版：
 [Duration/aspect]
 Use <Picture 1> as the first frame; preserve [face/costume/color/composition/lighting].
-[Subject] does [small action], then [main action]. Camera [one move] while [bg/light change].
+[Shot 1] [Subject] does [small action], then [main action] (with dialogue: she says <d>[Chinese] 台词原句</d> — identical <d> block, never translated). Camera [one move] while [bg/light change].
 Keep [identity/costume/shape/layout/product details].
 overall_soundscape: […]; non_diegetic_music: [… or N/A]
 PRESERVE: […]  AVOID: […]
@@ -298,16 +341,16 @@ PRESERVE: […]  AVOID: […]
 中文版：
 [时长/画幅]
 <Picture 1> 作为 0 秒首帧，<Picture 2> 作为 [时长] 秒尾帧。
-使用一个连续镜头完成变化：开始时 [<Picture 1> 的姿势/服装/构图/光线]；
+[Shot 1] 使用一个连续镜头完成变化：开始时 [<Picture 1> 的姿势/服装/构图/光线]；
 [中间逐步发生的动作路径]；最终准确落在 <Picture 2> 的 [姿势/状态/构图/光线]。
-镜头 [一种运镜]。
+镜头 [一种运镜]。（一镜到底也必须写 [Shot 1]）
 全程 [环境声/音效]，non_diegetic_music：[… 或 N/A]
 PRESERVE：[图1图2 间应稳定的元素]  AVOID：[跳变/闪烁…]
 
 英文版：
 [Duration/aspect]
 <Picture 1> aligns with 0.00s; <Picture 2> aligns with [X]s.
-One continuous shot: begin in <Picture 1>'s [pose/costume/composition/lighting];
+[Shot 1] One continuous shot: begin in <Picture 1>'s [pose/costume/composition/lighting];
 [gradual mid-path actions]; end exactly on <Picture 2>'s [pose/state/composition/light].
 Camera [one move]. overall_soundscape: […]; non_diegetic_music: [… or N/A]
 PRESERVE: […]  AVOID: […]
@@ -325,9 +368,9 @@ PRESERVE: […]  AVOID: […]
 <Audio 1>：音频复用——把这条音轨直接用作声音
 
 [核心创意] [主体] 在 [场景] 中 [动作]，[运镜风格]，[光线/氛围]。
-[分段过程] （多动作才分段）
-0–Xs：[景别]。[动作]。[运镜]。[声音，引用 <Audio 1> 节奏]。
-X–Ys：[景别]。[动作]。[运镜]。
+[分段过程] （多动作才分段；每镜必带 [Shot n]）
+[Shot 1] 0–Xs：[景别]。[动作]。[运镜]。[声音，引用 <Audio 1> 节奏]。
+[Shot 2] X–Ys：[景别]。[动作（有台词时： <d>[Chinese] 台词原句</d>）]。[运镜]。
 PRESERVE：[每条点名要保留的特征]  AVOID：[…]
 ```
 
@@ -338,7 +381,8 @@ PRESERVE：[每条点名要保留的特征]  AVOID：[…]
 <Video 1> 是源视频（保留其 [人物外观/表演/运镜/时序]，仅改 [目标]）。
 <Picture 1> 是 [新背景/新物体——保留其具体特征]。
 把 <Video 1> 中的 [旧物体] 替换为 [新物体/新背景]，重打光使 [主光方向] 匹配新背景。
-[分段过程描写替换后的运动]
+[分段过程描写替换后的运动，每镜必带 [Shot n]；若源视频含对白且需改词，新对白用 <d>[语言] 台词</d> 包装]
+[Shot 1] [景别]。[替换后的动作]。[保留的原运镜]。
 overall_soundscape：[…]；non_diegetic_music：[… 或 N/A]
 PRESERVE：[源视频需原样保留的部分]  AVOID：[穿帮/光线错位…]
 
@@ -347,7 +391,8 @@ PRESERVE：[源视频需原样保留的部分]  AVOID：[穿帮/光线错位…]
 <Video 1> is the source clip (preserve its [appearance/performance/camera/timing]; only [target] changes).
 <Picture 1> is the [new background/object — preserve its specifics].
 Replace [old] in <Video 1> with [new], relight to match [key light direction].
-[process…]
+[process… every shot prefixed with [Shot n]; if dialogue is replaced, wrap the new line as <d>[Chinese] 台词原句</d> or <d>[English] line.</d> per the script's original language]
+[Shot 1] [shot size]. [action after replacement]. [original camera move preserved].
 overall_soundscape: […]; non_diegetic_music: [… or N/A]
 PRESERVE: […]  AVOID: […]
 ```
@@ -365,9 +410,13 @@ PRESERVE: […]  AVOID: […]
 [可选] <Picture 2>/<Video 1>：背景/场景参考——锁定演播厅/舞台/直播间/虚拟背景
 数字人面向镜头，但允许贴合语义的丰富肢体动作：口播时手势挥动、身体前倾强调、侧身指向、小幅走动、拿起道具；唱歌/MV 时加入律动摇摆、打拍、小幅舞蹈。形象与服装全程锁定同一人。
 镜头不必一镜到底——可在「说话的停顿/句尾呼吸处」或「歌曲的乐句换气处/强拍」切换景别与角度（正面 MCU → 侧 15–45° → 过肩 → 低角度仰拍 → 手部/乐器 ECU 插入镜）；每次切换主体仍是同一个数字人，切点用插入镜或景别跳变自然过渡，绝不切在咬字或歌词中途。
+[分段过程]（口播/唱词脚本按镜切分，每镜必带 [Shot n]，台词/歌词必须用 <d> 包装）
+[Shot 1] 正面 MCU。她面向镜头微笑开口，右手小幅上抬  <d>[Chinese] 口播脚本第一句原文</d>。镜头极缓推入。
+[Shot 2] 侧 30° MS。她身体前倾强调，左手向画面右侧指向  <d>[Chinese] 口播脚本第二句原文</d>。镜头静态。
+（切点落在两句之间的语义停顿处；台词逐字照抄用户脚本，不改写、不翻译、不合并）
 光色以柔和正面蝶光为主（5600K，两侧 −1.5 档补光，光比 1.3:1），允许机位角度带来的光位自然偏移；避免会照出建模转折面的硬侧光/顶光。
 口播 ASL 3–6s，剪辑点卡在语义停顿；唱歌随节拍，剪辑点卡在乐句换气/重拍。口型对齐误差 <80ms，随机眨眼（每 3–5 秒一次、间隔不规律），每 10s 至少一次非语义微动作。
-PRESERVE：[数字人形象/服装稳定，口型对齐 <80ms，随机眨眼，主体始终是同一人]  AVOID：[形象漂移/口型错位/面部变形/等间隔机械眨眼/硬侧光/在咬字或歌词中途切镜]
+PRESERVE：[数字人形象/服装稳定，口型与各 <d> 块内台词逐字对齐、误差 <80ms，随机眨眼，主体始终是同一人]  AVOID：[形象漂移/口型错位/台词被改写或翻译/面部变形/等间隔机械眨眼/硬侧光/在咬字或歌词中途切镜]
 
 英文版：
 [Duration/aspect]
@@ -376,9 +425,13 @@ PRESERVE：[数字人形象/服装稳定，口型对齐 <80ms，随机眨眼，�
 [opt] <Picture 2>/<Video 1>: background/scene reference — studio/stage/livestream/virtual set.
 Digital human faces camera with semantically motivated body movement (hand gestures, lean-in to emphasize, turn to point, small steps, pick up a prop; for singing/MV add sway, beat-tapping, light choreography). Same avatar & costume locked across all shots.
 Camera need not hold one take — cut on spoken pauses/breaths or on song phrase-breaths/downbeats, varying angle & size (frontal MCU → 15–45° side → over-shoulder → low-angle → hand/instrument ECU insert); subject stays the same digital human every cut, transitions hidden by inserts or size jumps, never cut mid-word or mid-lyric.
+[Shot-by-shot] (script split per shot, every shot prefixed with [Shot n], every line wrapped in <d>)
+[Shot 1] Frontal MCU. She smiles into lens, right hand lifts slightly, saying  <d>[Chinese] 口播脚本第一句原文</d>. Camera pushes in very slowly.
+[Shot 2] 30° side MS. She leans in for emphasis, left hand points frame-right, saying  <d>[Chinese] 口播脚本第二句原文</d>. Static camera.
+(Cut on the semantic pause between lines; <d> blocks are copied verbatim from the user's script — never rewritten, translated or merged.)
 Soft frontal butterfly key ~5600K, -1.5 stop side fill, 1.3:1; avoid hard/raking light that reveals mesh facets.
 Talking-head ASL 3–6s with cuts on semantic pauses; singing cuts on phrase-breaths/beats. Lip-sync <80ms, irregular blink every 3–5s, one non-semantic micro-movement per 10s.
-PRESERVE: [stable avatar/costume, lip-sync <80ms, irregular blink, same subject every cut]  AVOID: [identity drift/mismatch/facial morph/robotic blink/hard light/cut mid-word or mid-lyric]
+PRESERVE: [stable avatar/costume, lip-sync locked verbatim to each <d> block within <80ms, irregular blink, same subject every cut]  AVOID: [identity drift/mismatch/rewritten or translated lines/facial morph/robotic blink/hard light/cut mid-word or mid-lyric]
 ```
 
 ## 运镜词汇表（英文术语，歧义更小）
@@ -408,7 +461,7 @@ PRESERVE: [stable avatar/costume, lip-sync <80ms, irregular blink, same subject 
 | 结尾中断 | 有动作没结束态 | 加明确姿态/位置/构图 |
 | 首尾帧跳变 | 只重复两静图 | 写清两帧间逐步变化 |
 | 参考素材混合 | 用路径代替 token / 无明确职责 | 只用 <Picture 1> 等顺序 token（不写路径），点名每个素材用途 |
-| 对白被改写 | 对白混在长描述里 | 原句单独放入简短说话指令 |
+| 对白被改写 / 被翻译 | 对白混在长描述里，或英文版把台词翻译了 | 用 `<d>[语言] 台词</d>` 单独包裹台词本体，中英两版逐字相同不翻译 |
 | 否定无效 | 自然语言否定非硬控制 | 改正向状态并删冲突要求 |
 
 ## 出片后先看四项（交付时附给用户）
