@@ -392,7 +392,7 @@ integrated_multimodal_description:
 [Shot 2] At 00:0X.XXX, 镜头切到 [景别]。[动作（有台词时：(S1) 她说 <d>[Chinese] 台词原句</d>）]。[运镜]。
 PRESERVE：[每条点名要保留的特征]  AVOID：[…]
 ```
-（进阶：若需严格锁定多个参考主体及其保留/迁移关系，改用官方 Ref2VA 六段式——`subject_definitions` / `summary` / `retention_analysis` / `detailed_description` / `overall_soundscape` / `non_diegetic_music`，标签用 `<Subject N>` / `<Picture N>` / `<Video N>` / `<Audio N>`，关系标记 `fully_preserved` / `partially_preserved` / `attribute_transfer` / `weak_reference`。）
+（进阶：若需严格锁定多个参考主体及其保留/迁移关系，改用官方 Ref2VA 六段式——`subject_definitions` / `summary` / `retention_analysis` / `detailed_description` / `overall_soundscape` / `non_diegetic_music`，标签用 `<Subject N>` / `<Picture N>` / `<Video N>` / `<Audio N>`，关系标记 `fully_preserved` / `partially_preserved` / `attribute_transfer` / `weak_reference`（音频整段复用另用 `fully_copy`，见 ⑥-B 数字人音频复用）。）
 
 ### ⑤ 视频编辑（对已有视频替换）
 ```
@@ -422,7 +422,7 @@ PRESERVE: […]  AVOID: […]
 
 ### ⑥ 数字人 / 虚拟人口播（角色图 + 可选声音 / 背景）
 
-> 数字人片「恐怖谷」分水岭是**形象稳定 + 随机眨眼 + 口型对齐**。命中 `long-tail-media.md` 的「虚拟人/数字人口播」「数字人进阶」「口播/知识博主」三节，必读完再生成。三节已升级为**既支持口播也支持唱歌/MV**，且允许**丰富肢体动作 + 合理镜头切换（卡在说话停顿或歌曲节拍上）**，不再是"一镜到底的固定死板机位"。开拍前先让用户**二选一写实路线或风格化虚拟形象路线**（写实做不到微表情就退风格化，别骑墙）。
+> 数字人片「恐怖谷」分水岭是**形象稳定 + 随机眨眼 + 口型对齐**。命中 `long-tail-media.md` 的「虚拟人/数字人口播」「数字人进阶」「口播/知识博主」三节，必读完再生成。三节已升级为**既支持口播也支持唱歌/MV**，且允许**丰富肢体动作 + 合理镜头切换（卡在说话停顿或歌曲节拍上）**，不再是"一镜到底的固定死板机位"。开拍前先让用户**二选一写实路线或风格化虚拟形象路线**（写实做不到微表情就退风格化，别骑墙）。若用户**同时给「角色图 + 原声」**要做锁脸复刻，走下方 **⑥-B 严格锁脸锁声（Ref2VA 六段式）**。
 
 ```
 中文版：
@@ -457,6 +457,62 @@ Talking-head ASL 3–6s with cuts on semantic pauses; singing cuts on phrase-bre
 overall_soundscape: […]; non_diegetic_music: [… or N/A]
 PRESERVE: [stable avatar/costume, lip-sync locked verbatim to each <d> block within <80ms, irregular blink, same subject every cut]  AVOID: [identity drift/mismatch/rewritten or translated lines/facial morph/robotic blink/hard light/cut mid-word or mid-lyric]
 ```
+
+#### ⑥-B 数字人 + 音频复用（Ref2VA 严格「锁脸 + 复刻原声」版）
+
+> 适用：用户**同时给「角色图 `<Picture 1>` + 一段原声 `<Audio 1>`」**，要数字人长成图里那样、且**一字不差复刻原声的讲话内容 / 节奏 / 停顿 / 重音**（真人形象 + 本人声音复刻、口播搬运、给已有录音配脸）。这是官方 Ref2VA 六段式的数字人落地版，比 ⑥ 默认「写脚本 + 对齐口型」更硬——身份锁 `<Picture 1>`、声音锁 `<Audio 1>`，正文**改用六段式**而非 `integrated_multimodal_description` 单块（与 ④ 进阶注记一致，是 Iron Rule C 的官方豁免场景）。
+> 关系标记补充：在 ④ 进阶注记的 `fully_preserved / partially_preserved / attribute_transfer / weak_reference` 之外，音频另用 **`fully_copy`**（原声完整复制：讲话 / 节奏 / 停顿 / 重音 / 总时长一字不改）。
+> **Iron Rule B 豁免**：⑥-B 的讲话由 `<Audio 1>` 承载（fully_copy），**不写 `<d>` 台词块**——语音来自音频而非书写脚本。若另需屏幕字幕 / 额外口播句，再补 `<d>[语言] …</d>`。
+
+中文版：
+subject_definitions:
+<Subject 1> 是 <Picture 1> 中的主要人物，作为本段分镜中讲话的主角。
+<Audio 1> 是 <Subject 1> (S1) 的完整参考音频，提供原始讲话内容、时间、节奏和停顿。
+
+summary:
+[reference generation + audio reuse] 本段保留 <Subject 1> 来自 <Picture 1> 的身份与外观，完整复用 <Audio 1> 中的讲话内容、节奏和停顿。
+
+retention_analysis:
+<Subject 1>（出现在 [Shot 1]）：fully_preserved - 人物面部身份、发型、服装、可见配饰、身体比例均来自 <Picture 1>。
+<Audio 1>：fully_copy - 完整保留原始音频的讲话、节奏、停顿、重音和总时长。
+
+detailed_description:
+[Shot 1]
+<Subject 1> (S1) 完整执行 <Audio 1> 中的讲话内容。嘴唇、下颌、脸颊和下半脸肌肉与每个音素、音节、元音、辅音、停顿、重音和语速变化精确同步。
+停顿与静音段保持闭嘴或放松，不产生机械式重复张嘴。
+眼神、眉毛和头部动作自然克制，重音处有对应表情。
+镜头保持稳定，延续 <Picture 1> 的景别与构图；表演开始于 <Audio 1> 开始时，结束于 <Audio 1> 结束时，自然收口并短暂停留。
+
+overall_soundscape:
+<Audio 1> 中原有的环境声、表演声、呼吸声均完整保留，不引入额外音效。
+
+non_diegetic_music:
+<Audio 1> 中如无原始配乐则为 N/A，不另行添加新配乐。
+
+英文版：
+subject_definitions:
+<Subject 1> is the main person in <Picture 1>, the speaking lead of this shot.
+<Audio 1> is the complete reference audio for <Subject 1> (S1), providing the original speech content, timing, rhythm and pauses.
+
+summary:
+[reference generation + audio reuse] This segment preserves <Subject 1>'s identity and appearance from <Picture 1>, and fully reuses the speech content, rhythm and pauses from <Audio 1>.
+
+retention_analysis:
+<Subject 1> (in [Shot 1]): fully_preserved — face identity, hairstyle, costume, visible accessories and body proportions all come from <Picture 1>.
+<Audio 1>: fully_copy — the original audio's speech, rhythm, pauses, stress and total duration are kept intact.
+
+detailed_description:
+[Shot 1]
+<Subject 1> (S1) performs the full speech content from <Audio 1>. Lips, jaw, cheeks and lower-face muscles sync precisely to every phoneme, syllable, vowel, consonant, pause, stress and pacing change.
+During pauses and silence, keep the mouth closed or relaxed — no mechanical repetitive opening.
+Eyes, brows and head move naturally and with restraint; stress points get a matching expression.
+Camera stays stable, continuing <Picture 1>'s shot size and composition; the performance starts when <Audio 1> starts and ends when <Audio 1> ends, closing naturally with a brief hold.
+
+overall_soundscape:
+The ambient sound, performance sound and breathing originally in <Audio 1> are fully preserved; no extra SFX added.
+
+non_diegetic_music:
+N/A if <Audio 1> has no original score; do not add new music.
 
 ## 运镜词汇表（英文术语，歧义更小）
 
