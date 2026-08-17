@@ -309,6 +309,8 @@ non_diegetic_music: N/A
 PRESERVE=[identity / costume stable, lip-sync <80ms, random blink, same subject every cut]  AVOID=[identity drift / lip mismatch / mechanical blink / hard side-light / cutting mid-word]
 ```
 
+> **For "lock face + verbatim audio reuse"** (user supplies both a digital-human character image and a recording / singing / rap track, wanting the avatar to look exactly like the image and reuse the original audio word-for-word): this default skeleton (write a script and lip-sync to it) is not strict enough. Use **⑥-B Digital Human + Audio Reuse (Ref2VA six-part)** in `SKILL.md`, picking **Variant 1 speech / Variant 2 singing / Variant 3 rap** by performance type. That sub-template uses the official six-part structure (`subject_definitions` / `summary` / `retention_analysis` / `detailed_description` / `overall_soundscape` / `non_diegetic_music`), locking identity to `<Picture 1>` and voice to `<Audio 1>` (`fully_copy`) — an official exemption to both Iron Rule C (no `integrated_multimodal_description` block) and Iron Rule B (no `<d>` line block).
+
 ---
 
 ## V. Supported Mainstream Tools

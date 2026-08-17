@@ -422,7 +422,7 @@ PRESERVE: […]  AVOID: […]
 
 ### ⑥ 数字人 / 虚拟人口播（角色图 + 可选声音 / 背景）
 
-> 数字人片「恐怖谷」分水岭是**形象稳定 + 随机眨眼 + 口型对齐**。命中 `long-tail-media.md` 的「虚拟人/数字人口播」「数字人进阶」「口播/知识博主」三节，必读完再生成。三节已升级为**既支持口播也支持唱歌/MV**，且允许**丰富肢体动作 + 合理镜头切换（卡在说话停顿或歌曲节拍上）**，不再是"一镜到底的固定死板机位"。开拍前先让用户**二选一写实路线或风格化虚拟形象路线**（写实做不到微表情就退风格化，别骑墙）。若用户**同时给「角色图 + 原声」**要做锁脸复刻，走下方 **⑥-B 严格锁脸锁声（Ref2VA 六段式）**。
+> 数字人片「恐怖谷」分水岭是**形象稳定 + 随机眨眼 + 口型对齐**。命中 `long-tail-media.md` 的「虚拟人/数字人口播」「数字人进阶」「口播/知识博主」三节，必读完再生成。三节已升级为**既支持口播也支持唱歌/MV**，且允许**丰富肢体动作 + 合理镜头切换（卡在说话停顿或歌曲节拍上）**，不再是"一镜到底的固定死板机位"。开拍前先让用户**二选一写实路线或风格化虚拟形象路线**（写实做不到微表情就退风格化，别骑墙）。若用户**同时给「角色图 + 原声（本人录音 / 唱歌 / 说唱）」**要做锁脸复刻，走下方 **⑥-B 严格锁脸锁声（Ref2VA 六段式）**，按表演类型选 变体一（口播）/ 变体二（唱歌）/ 变体三（说唱）。
 
 ```
 中文版：
@@ -460,9 +460,11 @@ PRESERVE: [stable avatar/costume, lip-sync locked verbatim to each <d> block wit
 
 #### ⑥-B 数字人 + 音频复用（Ref2VA 严格「锁脸 + 复刻原声」版）
 
-> 适用：用户**同时给「角色图 `<Picture 1>` + 一段原声 `<Audio 1>`」**，要数字人长成图里那样、且**一字不差复刻原声的讲话内容 / 节奏 / 停顿 / 重音**（真人形象 + 本人声音复刻、口播搬运、给已有录音配脸）。这是官方 Ref2VA 六段式的数字人落地版，比 ⑥ 默认「写脚本 + 对齐口型」更硬——身份锁 `<Picture 1>`、声音锁 `<Audio 1>`，正文**改用六段式**而非 `integrated_multimodal_description` 单块（与 ④ 进阶注记一致，是 Iron Rule C 的官方豁免场景）。
-> 关系标记补充：在 ④ 进阶注记的 `fully_preserved / partially_preserved / attribute_transfer / weak_reference` 之外，音频另用 **`fully_copy`**（原声完整复制：讲话 / 节奏 / 停顿 / 重音 / 总时长一字不改）。
-> **Iron Rule B 豁免**：⑥-B 的讲话由 `<Audio 1>` 承载（fully_copy），**不写 `<d>` 台词块**——语音来自音频而非书写脚本。若另需屏幕字幕 / 额外口播句，再补 `<d>[语言] …</d>`。
+> 适用：用户**同时给「角色图 `<Picture 1>` + 一段原声 `<Audio 1>`」**，要数字人长成图里那样、且**一字不差复刻原声的表演内容 / 节奏 / 停顿 / 重音**（真人形象 + 本人声音复刻、口播搬运、给已有录音配脸、给唱歌/说唱录音配脸）。这是官方 Ref2VA 六段式的数字人落地版，比 ⑥ 默认「写脚本 + 对齐口型」更硬——身份锁 `<Picture 1>`、声音锁 `<Audio 1>`，正文**改用六段式**而非 `integrated_multimodal_description` 单块（与 ④ 进阶注记一致，是 Iron Rule C 的官方豁免场景）。下方提供三套变体，按表演类型选用：**变体一口播（讲话）/ 变体二唱歌（演唱）/ 变体三说唱（Rap）**。
+> 关系标记补充：在 ④ 进阶注记的 `fully_preserved / partially_preserved / attribute_transfer / weak_reference` 之外，音频另用 **`fully_copy`**（原声完整复制：讲话·演唱·说唱的 内容 / 节奏 / 停顿 / 重音 / 总时长一字不改）。
+> **Iron Rule B 豁免**：⑥-B 的讲话 / 演唱 / 说唱均由 `<Audio 1>` 承载（fully_copy），**不写 `<d>` 台词块**——语音来自音频而非书写脚本。若另需屏幕字幕 / 额外口播句，再补 `<d>[语言] …</d>`。
+
+**变体一 · 口播（讲话）**
 
 中文版：
 subject_definitions:
@@ -513,6 +515,116 @@ The ambient sound, performance sound and breathing originally in <Audio 1> are f
 
 non_diegetic_music:
 N/A if <Audio 1> has no original score; do not add new music.
+
+**变体二 · 唱歌（演唱）**
+
+> 与变体一差异：口型按**旋律 + 元音口型**同步（长音维持稳定元音口型、乐句结束自然放松）；纯伴奏/无人声段闭嘴或放松；表情随声音强弱变化；头与上半身随节奏轻微摆动；`non_diegetic_music` 为**原曲背景配乐完整保留**（不再写 N/A）。`retention_analysis` 的 `<Subject 1>` 额外锁「麦克风或可见道具」。
+
+中文版：
+subject_definitions:
+<Subject 1> 是 <Picture 1> 中的主要人物，作为本段分镜中演唱的主角。
+<Audio 1> 是 <Subject 1> (S1) 的完整参考音频，提供原始歌声、时间、节奏、停顿和情绪变化。
+
+summary:
+[reference generation + audio reuse] 本段保留 <Subject 1> 来自 <Picture 1> 的身份与外观，完整复用 <Audio 1> 中的歌声内容、节奏和表演结构。
+
+retention_analysis:
+<Subject 1>（出现在 [Shot 1]）：fully_preserved - 人物面部身份、发型、服装、可见配饰、身体比例、麦克风或可见道具均来自 <Picture 1>。
+<Audio 1>：fully_copy - 完整保留原始音频的歌声、节奏、停顿、情绪变化和总时长。
+
+detailed_description:
+[Shot 1]
+<Subject 1> (S1) 完整演唱 <Audio 1>。嘴唇、下颌、脸颊和面部肌肉与每个音节、元音、辅音、旋律、停顿、强度变化精确同步。
+长音维持稳定的元音口型，乐句结束时自然放松嘴唇与下颌。
+纯伴奏与无人声段落保持闭嘴或放松状态，不随意张嘴。
+表情跟随声音强弱自然变化，眼神和眉毛轻微克制。
+头部和上半身随节奏轻微摆动，镜头保持稳定延续 <Picture 1> 的景别与构图。表演开始于 <Audio 1> 开始时，结束于 <Audio 1> 结束时，自然收口并短暂停留。
+
+overall_soundscape:
+<Audio 1> 中原有的环境声、表演声、呼吸声和观众声均完整保留，不引入额外音效。
+
+non_diegetic_music:
+<Audio 1> 中原有的背景配乐完整保留，不替换、不重排、不添加新配乐。
+
+英文版：
+subject_definitions:
+<Subject 1> is the main person in <Picture 1>, the singing lead of this shot.
+<Audio 1> is the complete reference audio for <Subject 1> (S1), providing the original vocals, timing, rhythm, pauses and emotional changes.
+
+summary:
+[reference generation + audio reuse] This segment preserves <Subject 1>'s identity and appearance from <Picture 1>, and fully reuses the vocal content, rhythm and performance structure from <Audio 1>.
+
+retention_analysis:
+<Subject 1> (in [Shot 1]): fully_preserved — face identity, hairstyle, costume, visible accessories, body proportions, microphone or visible prop all come from <Picture 1>.
+<Audio 1>: fully_copy — the original audio's vocals, rhythm, pauses, emotional changes and total duration are kept intact.
+
+detailed_description:
+[Shot 1]
+<Subject 1> (S1) sings the full <Audio 1>. Lips, jaw, cheeks and facial muscles sync precisely to every syllable, vowel, consonant, melody, pause and dynamics change.
+Sustain notes with a stable vowel mouth shape; relax the lips and jaw naturally at the end of each phrase.
+During purely instrumental or non-vocal sections, keep the mouth closed or relaxed — no random opening.
+Expression follows the vocal dynamics naturally; eyes and brows move subtly and with restraint.
+Head and upper body sway gently with the rhythm; camera stays stable, continuing <Picture 1>'s shot size and composition. The performance starts when <Audio 1> starts and ends when <Audio 1> ends, closing naturally with a brief hold.
+
+overall_soundscape:
+The ambient sound, performance sound, breathing and audience sound originally in <Audio 1> are fully preserved; no extra SFX added.
+
+non_diegetic_music:
+The original background score in <Audio 1> is fully preserved — do not replace, reorder or add new music.
+
+**变体三 · 说唱（Rap）**
+
+> 与变体一差异：口型按**快速音节 / 辅音 / 元音 / 换气 / 节奏点**精确映射，快嘴段**不可简化成重复嘴型**；头与上半身可轻微跟节奏但**避免持续机械点头与夸张挥手**；`non_diegetic_music` 为**原曲背景配乐完整保留**（不再写 N/A）。
+
+中文版：
+subject_definitions:
+<Subject 1> 是 <Picture 1> 中的主要人物，作为本段分镜中说唱的主角。
+<Audio 1> 是 <Subject 1> (S1) 的完整参考音频，提供原始说唱内容、节奏、重音和换气位置。
+
+summary:
+[reference generation + audio reuse] 本段保留 <Subject 1> 来自 <Picture 1> 的身份与外观，完整复用 <Audio 1> 中的说唱内容、节奏和表演结构。
+
+retention_analysis:
+<Subject 1>（出现在 [Shot 1]）：fully_preserved - 人物面部身份、发型、服装、可见配饰、身体比例均来自 <Picture 1>。
+<Audio 1>：fully_copy - 完整保留原始音频的说唱、节奏、重音、换气和总时长。
+
+detailed_description:
+[Shot 1]
+<Subject 1> (S1) 完整演绎 <Audio 1> 中的说唱。每个快速音节、辅音、元音、停顿、重音、换气和节奏点对应精确的嘴唇与下颌动作。
+快速说唱段不被简化为重复的嘴型动作。
+头部和上半身可轻微跟随节奏，避免持续机械点头和夸张挥手。
+眼神、眉毛和表情克制自然，镜头保持稳定延续 <Picture 1> 的景别与构图，表演开始于 <Audio 1> 开始时，结束于 <Audio 1> 结束时，自然收口并短暂停留。
+
+overall_soundscape:
+<Audio 1> 中原有的环境声、表演声、呼吸声均完整保留，不引入额外音效。
+
+non_diegetic_music:
+<Audio 1> 中原有的背景配乐完整保留，不替换、不重排、不添加新配乐。
+
+英文版：
+subject_definitions:
+<Subject 1> is the main person in <Picture 1>, the rapping lead of this shot.
+<Audio 1> is the complete reference audio for <Subject 1> (S1), providing the original rap content, rhythm, stress and breath positions.
+
+summary:
+[reference generation + audio reuse] This segment preserves <Subject 1>'s identity and appearance from <Picture 1>, and fully reuses the rap content, rhythm and performance structure from <Audio 1>.
+
+retention_analysis:
+<Subject 1> (in [Shot 1]): fully_preserved — face identity, hairstyle, costume, visible accessories and body proportions all come from <Picture 1>.
+<Audio 1>: fully_copy — the original audio's rap, rhythm, stress, breaths and total duration are kept intact.
+
+detailed_description:
+[Shot 1]
+<Subject 1> (S1) performs the full rap from <Audio 1>. Every fast syllable, consonant, vowel, pause, stress, breath and rhythmic hit maps to a precise lip and jaw motion.
+Fast rap passages must not be reduced to a repeated mouth shape.
+Head and upper body may follow the rhythm slightly — avoid continuous mechanical nodding and exaggerated hand-waving.
+Eyes, brows and expression stay restrained and natural; camera stays stable, continuing <Picture 1>'s shot size and composition. The performance starts when <Audio 1> starts and ends when <Audio 1> ends, closing naturally with a brief hold.
+
+overall_soundscape:
+The ambient sound, performance sound and breathing originally in <Audio 1> are fully preserved; no extra SFX added.
+
+non_diegetic_music:
+The original background score in <Audio 1> is fully preserved — do not replace, reorder or add new music.
 
 ## 运镜词汇表（英文术语，歧义更小）
 

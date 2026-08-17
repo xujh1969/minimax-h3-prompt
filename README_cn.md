@@ -310,6 +310,8 @@ non_diegetic_music: N/A
 PRESERVE=[形象/服装稳定，口型对齐 <80ms，随机眨眼，主体始终是同一人]  AVOID=[形象漂移/口型错位/机械眨眼/硬侧光/在咬字中途切镜]
 ```
 
+> **若要「锁脸 + 一字不差复刻原声」**（同时给数字人角色图 + 一段本人录音 / 唱歌 / 说唱，要形象长成图里那样、声音完整复用原音频）：本示例的默认写法（写脚本对齐口型）不够硬，请改用 `SKILL.md` 的 **⑥-B 数字人 + 音频复用（Ref2VA 六段式）**，按表演类型选 **变体一口播 / 变体二唱歌 / 变体三说唱**。该子模板用官方六段式（`subject_definitions`/`summary`/`retention_analysis`/`detailed_description`/`overall_soundscape`/`non_diegetic_music`），身份锁 `<Picture 1>`、声音锁 `<Audio 1>`（`fully_copy`），是 Iron Rule C（不用 `integrated_multimodal_description` 单块）与 Iron Rule B（不写 `<d>` 台词块）的官方豁免场景。
+
 ---
 
 ## 五、支持的主流工具
