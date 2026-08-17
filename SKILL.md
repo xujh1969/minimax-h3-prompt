@@ -141,6 +141,7 @@ compatibility: Portable to any agent that can read local files — no external A
    - 这三层与题材**正交**，是「在已加载题材文件之外**额外加载**」，触发关键词与写法见 genre-index 第五、六节。
    - 做**跨题材插值**时还需加载 `references/genre/long-tail-genres.md`（跨题材综合示例与插值硬规矩）。
    - 用户请求涉及**角色表演 / 肢体动作 / 表情变化 / 环境动态 / 首尾帧过渡 / 产品展示动效**时，**额外**加载 `references/animation-principles.md`（动画十二原则 → H3 可观察提示词映射，与题材正交）。它提供：十二原则映射表、单镜时间节拍、跟随/重叠/次要动作、挤压拉伸、首尾帧缓出稳定、运镜×动作反向复杂度等规则；按本文件「以效果织入」铁律落到 `[Shot n]`。
+   - 用户点名 **Vox 风 / 剪纸拼贴 / 知识视频 / 科普 / 数据对比 / 信息图 / 新闻时间线 / explainer**，或要把「一段文案做成风格统一、信息可读的短视频」时，**额外**加载 `references/vox-knowledge.md`（吸收自 voxeasy 的 Vox 风格知识视频技法，适配 H3）。它提供：Vox 视觉引擎核心、表达方式路由（direct/story/metaphor）、叙事弧架构（pas/how_it_works/timeline/man_in_hole）、数据视觉层、Vox 固定运镜序列、构图纪律与动作分段、开头/结尾模板、知识类画风预设、自检清单。与 `references/visual-style.md` 第 14 节（剪纸/皮影）配合：第 14 节给纸艺基底，本文件给知识视频的结构与数据表达。
 
 **为什么必须先读题材文件**：题材文件给的是**具体可执行参数**（ASL 秒数、开尔文色温、光比、fps、光位名、禁用运镜）与**母题动词**。跳过它写出来的提示词必然是"电影感/高级感"这类模型无法执行的空话。
 

@@ -291,6 +291,25 @@
 > 皮影戏风格动画，硬边剪影角色由铰接关节驱动，光线从幕布后方逆向透射，半透明皮革呈现朱红与靛蓝，可见纤维纹理，三层平面纸片层叠制造纵深，角色沿水平方向平移进出画面，摄影机与幕布严格平行。
 > `Shadow-puppet style animation, hard-edged silhouettes with articulated joints, strong backlight transmitting through translucent leather in vermilion and indigo, visible fiber texture, three stacked flat paper layers for depth, characters sliding horizontally in and out of frame, camera locked parallel to the screen.`
 
+### 14b. Vox 剪纸拼贴（知识/科普/数据视频首选）
+
+不同于皮影的「逆光透射剪影」，Vox 是**正面受光的哑光拼贴**：扁平实色纸贴（flat solid-color paper cutout sticker）、锐利切边与投影、明显纸层堆叠、高反差、干净矢量细节，带「流体延时 + 定格纸感」动画。适合做知识讲解、数据对比、信息图、新闻时间线——**结构与数据表达见 `references/vox-knowledge.md`**，该文件专补「知识性视频」的表达方式路由、叙事弧、数据视觉层、固定运镜序列与自检清单。
+
+| 维度 | 参数 |
+|---|---|
+| 线条与轮廓 | **硬边切边**（die-cut outline），纸贴有可见厚度与投影；非剪影 |
+| 上色与质感 | **哑光实色纸面**（matte），无渐变、无光滑 3D；可带轻微纸纤维 |
+| 背景与景深 | **平面层叠 + 语义功能**：前中后纸层，背景必须承载场景/数据底板/路径，禁止无意义的满屏色碎 |
+| 光效处理 | 正面柔向光（soft directional lighting），非逆光；保持定格纸感、稳定不闪烁 |
+| 运动规律 | 流体延时动画 + 定格纸纹触感；避免照片写实/3D 纵深 |
+| 摄影机行为 | 连续贯穿运镜（push_in / pan / layer_dissection / parallax），服务于主体与信息揭示 |
+| 色彩体系 | 珊瑚红 `#E8625C` / 哑光青蓝 `#2B697A` / 芥末琥珀 `#E5A93C` / 奶油纸白 `#FAF9F5` / 深炭灰 `#2D2D2D`（Hex 仅作不可见生成控制） |
+| **头号翻车点** | 把 Hex 色值/色号渲染成画面可见文字；背景铺满无关彩色碎纸；无声视频却写旁白台词 |
+
+**锚点句**
+> Vox 风格剪纸拼贴动画，哑光实色纸贴角色与物体，硬边切边与锐利投影，明显纸层堆叠，高反差干净矢量细节，流体延时动画带定格纸感，正面柔向光，稳定不闪烁。
+> `Vox style paper-cut collage art, stylized minimal flat solid-color paper cutout stickers with sharp die-cut outlines and crisp drop shadows, obvious paper layer stacking, high contrast clean vector details, fluid time-lapse animation with stop-motion paper texture feel, soft directional lighting, stable non-flickering.`
+
 ---
 
 ## 15. 像素艺术 / Low-poly Pixel Art & Low-poly
